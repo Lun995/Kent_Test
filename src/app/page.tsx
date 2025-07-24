@@ -2,6 +2,19 @@
 import { Paper, Group, Stack, Button, Badge, Text, Box, Divider, Table, Modal, Group as MantineGroup, Button as MantineButton, TextInput } from '@mantine/core';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+// 新增：響應式判斷
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 900);
+    }
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return isMobile;
+}
 
 // 型別定義
 interface OrderItem {
@@ -32,10 +45,12 @@ export default function WorkstationBoard() {
     border: '2px solid #222',
     borderRadius: 12,
     background: '#fff',
-    padding: '4px 16px',
+    padding: '4px 8px',
     flex: 1,
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 0,
+    minWidth: 0,
+    maxWidth: '100%',
   };
   // 時鐘元件
   function Clock() {
@@ -125,7 +140,7 @@ export default function WorkstationBoard() {
       label: '部分銷單',
       onClick: () => {
         if (!selectedItem) {
-          alert('請先選取一個品項');
+          setShowSelectItemModal(true);
           return;
         }
         // 依據選取品項自動生成 modalRows（桌號、名稱、數量）
@@ -182,55 +197,78 @@ export default function WorkstationBoard() {
   };
 
   const [showTestPortal, setShowTestPortal] = useState(false);
+  // 新增：選取品項提示 modal 狀態
+  const [showSelectItemModal, setShowSelectItemModal] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <>
       <Paper
         radius="xl"
-        p="md"
+        p={0}
         style={{
           border: '3px solid #222',
-          minHeight: 700,
-          minWidth: 900,
-          margin: 20,
+          height: '100vh',
+          width: 'calc(100vw - 6px)',
+          minHeight: 0,
+          minWidth: 0,
+          maxWidth: '100vw',
           background: '#fff',
           position: 'relative',
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: isMobile ? 'column' : 'row',
           alignItems: 'stretch',
-          overflow: 'visible', // 強制外層不裁切
+          margin: 0,
+          overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
         {/* 左側功能列 */}
         <Box
           style={{
-             width: 80,
-             background: '#f5f5f5',
-             borderRight: '2px solid #222',
-             borderBottom: '2px solid #222',
-             borderTopLeftRadius: 24,
-             borderBottomLeftRadius: 0,
-             borderTopRightRadius: 0,
-             borderBottomRightRadius: 0,
-             display: 'flex',
-             flexDirection: 'column',
-             alignItems: 'center',
-             padding: '0',
-             height: '100vh',
+            width: isMobile ? '100%' : '12vw',
+            maxWidth: '100vw',
+            minWidth: 0,
+            background: '#f5f5f5',
+            borderRight: isMobile ? 0 : '2px solid #222',
+            borderBottom: '2px solid #222',
+            borderTopLeftRadius: 24,
+            borderBottomLeftRadius: isMobile ? 24 : 0,
+            borderTopRightRadius: isMobile ? 24 : 0,
+            borderBottomRightRadius: 0,
+            display: 'flex',
+            flexDirection: isMobile ? 'row' : 'column',
+            alignItems: 'center',
+            padding: 0,
+            height: isMobile ? 'auto' : '100vh',
+            minHeight: 0,
+            justifyContent: isMobile ? 'flex-start' : undefined,
+            boxSizing: 'border-box',
+            overflow: 'hidden',
           }}
         >
           {/* 時間顯示 */}
-          <Box style={{ width: '100%', textAlign: 'center', fontWeight: 700, fontSize: '1.2rem', padding: '8px 0', userSelect: 'none', pointerEvents: 'none', borderBottom: '1px solid #ccc' }}>{currentTime}</Box>
+          <Box style={{ width: '100%', textAlign: 'center', fontWeight: 700, fontSize: isMobile ? '1rem' : '1.2rem', padding: isMobile ? '4px 0' : '8px 0', userSelect: 'none', pointerEvents: 'none', borderBottom: '1px solid #ccc' }}>{currentTime}</Box>
 
           {/* 上方按鈕：更新、部分銷單 */}
-          <Box style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+          <Box style={{ width: '100%', display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: isMobile ? 4 : 8, marginTop: 12, minWidth: 0, maxWidth: '100vw', overflow: 'hidden' }}>
             {leftButtons.slice(0, 2).map((btn, idx) => (
               <Button
                 key={btn.label}
                 variant="outline"
                 color="dark"
-                size="md"
-                style={{ width: 80, fontSize: '1rem', fontWeight: 700 }}
+                size={isMobile ? 'sm' : 'md'}
+                style={{
+                  width: '100%',
+                  flex: 1,
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  fontSize: isMobile ? '0.95rem' : '1rem',
+                  fontWeight: 700,
+                  margin: 0,
+                  padding: 0,
+                  boxSizing: 'border-box',
+                }}
                 onClick={btn.onClick}
               >
                 {btn.label}
@@ -239,14 +277,24 @@ export default function WorkstationBoard() {
           </Box>
 
           {/* 下方按鈕：已點餐及其下方按鈕，靠下排列 */}
-          <Box style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 'auto', marginBottom: 40 }}>
+          <Box style={{ width: '100%', display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: isMobile ? 4 : 8, marginTop: isMobile ? 0 : 'auto', marginBottom: isMobile ? 0 : 40, minWidth: 0, maxWidth: '100vw', overflow: 'hidden' }}>
             {leftButtons.slice(2).map((btn, idx) => (
               <Button
                 key={btn.label}
                 variant="outline"
                 color="dark"
-                size="md"
-                style={{ width: 80, fontSize: '1rem', fontWeight: 700 }}
+                size={isMobile ? 'sm' : 'md'}
+                style={{
+                  width: '100%',
+                  flex: 1,
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  fontSize: isMobile ? '0.95rem' : '1rem',
+                  fontWeight: 700,
+                  margin: 0,
+                  padding: 0,
+                  boxSizing: 'border-box',
+                }}
                 onClick={btn.onClick}
               >
                 {btn.label}
@@ -256,44 +304,72 @@ export default function WorkstationBoard() {
         </Box>
 
         {/* 右側主內容 */}
-        <Box style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Box
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0,
+            width: '100%',
+            maxWidth: '100vw',
+            height: '100%',
+            minHeight: 0,
+            overflow: 'hidden',
+            boxSizing: 'border-box',
+          }}
+        >
           <Group
-            gap="md"
+            gap={8}
             style={{
               background: '#f5f5f5',
               borderBottom: '2px solid #222',
               borderRadius: '24px 24px 0 0',
               alignItems: 'center',
-              padding: '8px 10px',
+              padding: '8px 4px',
               justifyContent: 'flex-start',
               display: 'flex',
               marginBottom: 0,
+              minWidth: 0,
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+              overflow: 'hidden',
             }}
           >
             {/* 所有訂單 */}
             <span style={summaryBoxStyle}>
-              <span style={{ marginRight: 6 }}>所有訂單</span>
-              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem' }}>22</Badge>
+              <span style={{ marginRight: 4, overflowWrap: 'break-word' }}>所有訂單</span>
+              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem', overflowWrap: 'break-word' }}>22</Badge>
             </span>
             {/* 內用 */}
             <span style={summaryBoxStyle}>
-              <span style={{ marginRight: 6 }}>內用</span>
-              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem' }}>22</Badge>
+              <span style={{ marginRight: 4, overflowWrap: 'break-word' }}>內用</span>
+              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem', overflowWrap: 'break-word' }}>22</Badge>
             </span>
             {/* 外帶 */}
             <span style={summaryBoxStyle}>
-              <span style={{ marginRight: 6 }}>外帶</span>
-              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem' }}>22</Badge>
+              <span style={{ marginRight: 4, overflowWrap: 'break-word' }}>外帶</span>
+              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem', overflowWrap: 'break-word' }}>22</Badge>
             </span>
             {/* 外送 */}
-            <span style={{ ...summaryBoxStyle, marginRight: 0 }}>
-              <span style={{ marginRight: 6 }}>外送</span>
-              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem' }}>22</Badge>
+            <span style={summaryBoxStyle}>
+              <span style={{ marginRight: 0, overflowWrap: 'break-word' }}>外送</span>
+              <Badge color="gray" size="lg" style={{ fontWeight: 700, fontSize: '1.1rem', overflowWrap: 'break-word' }}>22</Badge>
             </span>
           </Group>
           <Box style={{ flex: 1, padding: 0, margin: 0 }}>
             {/* 三欄看板（Table） */}
-            <Table highlightOnHover={false} style={{ tableLayout: 'fixed', width: '100%', marginTop: 0 }}>
+            <Table
+              highlightOnHover={false}
+              style={{
+                tableLayout: 'fixed',
+                width: '100%',
+                minWidth: 0,
+                maxWidth: '100vw',
+                marginTop: 0,
+                boxSizing: 'border-box',
+                overflow: 'hidden',
+                padding: 0,
+              }}>
               <thead>
                 <tr>
                   <th style={{ background: '#009944', color: '#fff', textAlign: 'center', fontWeight: 700, fontSize: 20, borderRight: '2px solid #222', borderBottom: '2px solid #222' }}>#1-製作中</th>
@@ -304,7 +380,7 @@ export default function WorkstationBoard() {
               <tbody>
                 <tr>
                   {/* 製作中 */}
-                  <td style={{ verticalAlign: 'top' }}>
+                  <td style={{ verticalAlign: 'top', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', padding: 0 }}>
                     {summarizeItems(categoryItems.making).map((item, idx, arr) => (
                       <div
                         key={item.name}
@@ -312,12 +388,12 @@ export default function WorkstationBoard() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: 32,
+                          gap: 12,
                           background: selectedItem && selectedItem.category === 'making' && selectedItem.name === item.name ? '#ff8fa3' : '#f5f5f5',
                           color: selectedItem && selectedItem.category === 'making' && selectedItem.name === item.name ? '#222' : '#222',
                           fontWeight: selectedItem && selectedItem.category === 'making' && selectedItem.name === item.name ? 900 : 500,
                           borderRadius: 10,
-                          padding: '8px 10px',
+                          padding: '4px 4px',
                           marginBottom: 4,
                           cursor: 'pointer',
                           borderTop: selectedItem && selectedItem.category === 'making' && selectedItem.name === item.name ? '2.5px solid #222' : '1px solid #222',
@@ -335,7 +411,7 @@ export default function WorkstationBoard() {
                     ))}
                   </td>
                   {/* Hold */}
-                  <td style={{ verticalAlign: 'top' }}>
+                  <td style={{ verticalAlign: 'top', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', padding: 0 }}>
                     {summarizeItems(categoryItems.hold).map((item, idx, arr) => (
                       <div
                         key={item.name}
@@ -343,12 +419,12 @@ export default function WorkstationBoard() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: 12,
+                          gap: 8,
                           background: '#f5f5f5',
                           color: '#222',
                           fontWeight: 500,
                           borderRadius: 6,
-                          padding: '8px 10px',
+                          padding: '4px 4px',
                           marginBottom: 4,
                           cursor: 'pointer',
                           border: '1px solid #222',
@@ -362,7 +438,7 @@ export default function WorkstationBoard() {
                     ))}
                   </td>
                   {/* 待製作 */}
-                  <td style={{ verticalAlign: 'top' }}>
+                  <td style={{ verticalAlign: 'top', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', padding: 0 }}>
                     {summarizeItems(categoryItems.waiting).map((item, idx, arr) => (
                       <div
                         key={item.name}
@@ -370,12 +446,12 @@ export default function WorkstationBoard() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: 12,
+                          gap: 8,
                           background: '#f5f5f5',
                           color: '#222',
                           fontWeight: 500,
                           borderRadius: 6,
-                          padding: '8px 10px',
+                          padding: '4px 4px',
                           marginBottom: 4,
                           opacity: 0.5,
                           cursor: 'not-allowed',
@@ -402,18 +478,20 @@ export default function WorkstationBoard() {
             transform: 'translate(-50%, -50%)',
             background: '#fff',
             zIndex: 99999,
-            minWidth: 400,
-            minHeight: 200,
+            width: isMobile ? '90vw' : 420,
+            maxWidth: '95vw',
+            minWidth: isMobile ? '60vw' : 320,
+            minHeight: isMobile ? '20vh' : 200,
             border: '3px solid #222',
             borderRadius: 16,
             boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-            padding: 24,
+            padding: isMobile ? '4vw' : 24,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'flex-start',
           }}>
-            <div style={{ background: '#ffc107', color: '#fff', fontWeight: 900, fontSize: '1.2rem', textAlign: 'center', borderRadius: 8, padding: '8px 0', width: '100%', marginBottom: 16 }}>
+            <div style={{ background: '#ffc107', color: '#fff', fontWeight: 900, fontSize: isMobile ? '1.1rem' : '1.2rem', textAlign: 'center', borderRadius: 8, padding: isMobile ? '6px 0' : '8px 0', width: '100%', marginBottom: 16 }}>
               部分銷單(HOLD)品項
             </div>
             <div style={{ width: '100%' }}>
@@ -426,34 +504,34 @@ export default function WorkstationBoard() {
                     background: '#fff',
                     color: '#222',
                     borderRadius: 8,
-                    padding: '8px 10px',
-                    marginBottom: 10,
+                    padding: isMobile ? '6px 4vw' : '8px 10px',
+                    marginBottom: isMobile ? 6 : 10,
                     fontWeight: 700,
-                    fontSize: '1.1rem',
+                    fontSize: isMobile ? '1rem' : '1.1rem',
                     border: '1px solid #ccc',
                   }}
                 >
-                  <span style={{ minWidth: 80 }}>{row.table}</span>
+                  <span style={{ minWidth: isMobile ? 60 : 80 }}>{row.table}</span>
                   <span style={{ flex: 1, textAlign: 'center' }}>{row.name}</span>
-                  <span style={{ minWidth: 40, textAlign: 'right', color: '#888' }}>{row.count}</span>
+                  <span style={{ minWidth: isMobile ? 32 : 40, textAlign: 'right', color: '#888' }}>{row.count}</span>
                   {/* 加減按鈕與異動數量 */}
-                  <span style={{ display: 'flex', alignItems: 'center', marginLeft: 16 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', marginLeft: isMobile ? 8 : 16 }}>
                     <MantineButton
                       size="xs"
                       color="gray"
                       variant="outline"
-                      style={{ minWidth: 28, padding: 0, marginRight: 4 }}
+                      style={{ minWidth: isMobile ? 22 : 28, padding: 0, marginRight: 4 }}
                       onClick={() => setHoldEditCounts(arr => arr.map((v, i) => i === idx ? Math.max(0, v - 1) : v))}
                       disabled={holdEditCounts[idx] <= 0}
                     >
                       -
                     </MantineButton>
-                    <span style={{ minWidth: 24, textAlign: 'center', fontWeight: 700, color: holdEditCounts[idx] > 0 ? 'red' : '#888' }}>{holdEditCounts[idx]}</span>
+                    <span style={{ minWidth: isMobile ? 18 : 24, textAlign: 'center', fontWeight: 700, color: holdEditCounts[idx] > 0 ? 'red' : '#888' }}>{holdEditCounts[idx]}</span>
                     <MantineButton
                       size="xs"
                       color="gray"
                       variant="outline"
-                      style={{ minWidth: 28, padding: 0, marginLeft: 4 }}
+                      style={{ minWidth: isMobile ? 22 : 28, padding: 0, marginLeft: 4 }}
                       onClick={() => setHoldEditCounts(arr => arr.map((v, i) => i === idx ? Math.min(row.count, v + 1) : v))}
                       disabled={holdEditCounts[idx] >= row.count}
                     >
@@ -463,12 +541,12 @@ export default function WorkstationBoard() {
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, width: '100%', marginTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: isMobile ? 8 : 16, width: '100%', marginTop: 16 }}>
               <MantineButton
                 variant="outline"
                 color="dark"
-                size="md"
-                style={{ width: 80, fontSize: '1rem', fontWeight: 700 }}
+                size={isMobile ? 'sm' : 'md'}
+                style={{ width: isMobile ? '40vw' : 80, minWidth: 60, maxWidth: 120, fontSize: isMobile ? '0.95rem' : '1rem', fontWeight: 700 }}
                 onClick={handleHold}
               >
                 Hold
@@ -476,8 +554,8 @@ export default function WorkstationBoard() {
               <MantineButton
                 variant="outline"
                 color="dark"
-                size="md"
-                style={{ width: 80, fontSize: '1rem', fontWeight: 700 }}
+                size={isMobile ? 'sm' : 'md'}
+                style={{ width: isMobile ? '40vw' : 80, minWidth: 60, maxWidth: 120, fontSize: isMobile ? '0.95rem' : '1rem', fontWeight: 700 }}
                 onClick={() => setShowModal(false)}
               >
                 關閉
@@ -511,6 +589,44 @@ export default function WorkstationBoard() {
         onClick={() => setShowTestPortal(false)}
         >
           React Portal 測試 (點擊關閉)
+        </div>,
+        document.body
+      )}
+      {/* 選取品項提示 Modal */}
+      {showSelectItemModal && typeof window !== 'undefined' && createPortal(
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#fff',
+          zIndex: 100000,
+          width: isMobile ? '80vw' : 340,
+          maxWidth: '95vw',
+          minWidth: isMobile ? '50vw' : 240,
+          minHeight: isMobile ? '12vh' : 120,
+          border: '3px solid #222',
+          borderRadius: 16,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+          padding: isMobile ? '4vw' : 32,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontWeight: 900, fontSize: isMobile ? '1.05rem' : '1.2rem', color: '#d7263d', marginBottom: 16 }}>
+            請先選取一個品項
+          </div>
+          <MantineButton
+            variant="filled"
+            color="dark"
+            size={isMobile ? 'sm' : 'md'}
+            style={{ width: isMobile ? '40vw' : 100, minWidth: 60, maxWidth: 120, fontWeight: 700, fontSize: isMobile ? '0.95rem' : '1rem', borderRadius: 8 }}
+            onClick={() => setShowSelectItemModal(false)}
+          >
+            確認
+          </MantineButton>
         </div>,
         document.body
       )}
