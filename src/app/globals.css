@@ -22,6 +22,34 @@ html, body, #__next {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 確保根元素不會產生滾動條 */
+#__next {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 確保所有元素都不會產生滾動條 */
+* {
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+}
+
+/* 特別處理可能產生滾動的元素 */
+div, section, main, article, aside, header, footer, nav {
+  overflow: hidden !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+}
+
+/* 確保 body 和 html 不會有滾動 */
+html, body {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
 /* 強制 Mantine Modal 置中 */
@@ -49,4 +77,23 @@ table, thead, tbody, tr, th, td {
   min-width: 0 !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
+}
+
+/* 防止手機上的縮放 */
+* {
+  touch-action: manipulation !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* 允許特定元素的文字選擇 */
+input, textarea {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
 }
