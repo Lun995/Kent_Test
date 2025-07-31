@@ -2,6 +2,7 @@
 import { Paper, Group, Stack, Button, Badge, Text, Box, Divider, Table, Modal, Group as MantineGroup, Button as MantineButton, TextInput } from '@mantine/core';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { AudioTest } from '../components/AudioTest';
 // 新增：響應式判斷
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -33,6 +34,54 @@ interface SelectedItem {
   category: keyof CategoryItems;
   name: string;
   table?: string;
+}
+
+// 新增：音效播放 Hook
+function useAudioPlayer() {
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    // 創建音效元素
+    const audioElement = new Audio('/notification.mp3'); // 預設音效檔案
+    audioElement.preload = 'auto';
+    
+    audioElement.addEventListener('play', () => setIsPlaying(true));
+    audioElement.addEventListener('pause', () => setIsPlaying(false));
+    audioElement.addEventListener('ended', () => setIsPlaying(false));
+    audioElement.addEventListener('error', (e) => {
+      console.error('音效播放錯誤:', e);
+      setIsPlaying(false);
+    });
+
+    setAudio(audioElement);
+
+    return () => {
+      audioElement.pause();
+      audioElement.remove();
+    };
+  }, []);
+
+  const playSound = (audioUrl?: string) => {
+    if (audio) {
+      if (audioUrl) {
+        audio.src = audioUrl;
+      }
+      audio.currentTime = 0;
+      audio.play().catch(error => {
+        console.error('播放音效失敗:', error);
+      });
+    }
+  };
+
+  const stopSound = () => {
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  };
+
+  return { playSound, stopSound, isPlaying };
 }
 
 export default function WorkstationBoard() {
@@ -119,6 +168,8 @@ export default function WorkstationBoard() {
     });
     return Object.entries(summary).map(([name, count]) => ({ name, count }));
   }
+
+
 
   // 左側按鈕資料
   const leftButtons = [
@@ -317,6 +368,8 @@ export default function WorkstationBoard() {
                 {btn.label}
               </Button>
             ))}
+            {/* 音效測試按鈕 */}
+            <AudioTest isMobile={isMobile} />
           </Box>
         </Box>
 
@@ -627,34 +680,7 @@ export default function WorkstationBoard() {
           document.body
         )}
       </Paper>
-      {/* React Portal 測試浮層 */}
-      {showTestPortal && typeof window !== 'undefined' && createPortal(
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: 'blue',
-          color: '#fff',
-          zIndex: 99999,
-          width: 300,
-          height: 120,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 700,
-          fontSize: 24,
-          borderRadius: 12,
-          pointerEvents: 'auto',
-          cursor: 'pointer',
-          overflow: 'hidden',
-        }}
-        onClick={() => setShowTestPortal(false)}
-        >
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>React Portal 測試 (點擊關閉)</span>
-        </div>,
-        document.body
-      )}
+      
       {/* 選取品項提示 Modal */}
       {showSelectItemModal && typeof window !== 'undefined' && createPortal(
         <div style={{
