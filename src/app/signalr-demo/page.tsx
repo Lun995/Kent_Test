@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Container, Title, Text, Stack, Alert, Card, Group, Button, Badge, Divider, ScrollArea } from '@mantine/core'
-import { IconWifi, IconWifiOff, IconPlay, IconStop, IconRefresh, IconTestPipe, IconNetwork, IconCheck, IconX } from '@tabler/icons-react'
+import { IconWifi, IconWifiOff, IconPlayerPlay, IconPlayerStop, IconRefresh, IconTestPipe, IconNetwork, IconCheck, IconX } from '@tabler/icons-react'
 import { useSignalRMock, simulateNetworkChanges, simulateEventSequence } from '../../lib/signalr-mock'
 
 export default function SignalRDemoPage() {
@@ -218,7 +218,7 @@ export default function SignalRDemoPage() {
                 斷線
               </Button>
               <Button
-                leftSection={<IconPlay size={16} />}
+                leftSection={<IconPlayerPlay size={16} />}
                 onClick={startSimulation}
                 disabled={!connection.isConnected || isSimulating || isRunningTests}
                 variant="light"
@@ -227,7 +227,7 @@ export default function SignalRDemoPage() {
                 開始模擬
               </Button>
               <Button
-                leftSection={<IconStop size={16} />}
+                leftSection={<IconPlayerStop size={16} />}
                 onClick={stopSimulation}
                 disabled={!isSimulating || isRunningTests}
                 variant="light"

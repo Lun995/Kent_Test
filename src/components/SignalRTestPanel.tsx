@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Card, Title, Text, Group, Button, Badge, Stack, Alert, Divider, ScrollArea } from '@mantine/core'
-import { IconWifi, IconWifiOff, IconPlay, IconStop, IconRefresh, IconTrash, IconTestPipe, IconNetwork } from '@tabler/icons-react'
+import { IconWifi, IconWifiOff, IconPlayerPlay, IconPlayerStop, IconRefresh, IconTrash, IconTestPipe, IconNetwork } from '@tabler/icons-react'
 import { useSignalRMock } from '../lib/signalr-mock'
 import { simulateNetworkChanges, simulateEventSequence } from '../lib/signalr-mock'
 
@@ -139,7 +139,7 @@ export const SignalRTestPanel: React.FC = () => {
             斷線
           </Button>
           <Button
-            leftSection={<IconPlay size={16} />}
+                            leftSection={<IconPlayerPlay size={16} />}
             onClick={startSimulation}
             disabled={!connection.isConnected || isSimulating}
             variant="light"

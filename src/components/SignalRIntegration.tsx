@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Badge, Group, Text, Card, Stack, Button, Alert, Divider, ScrollArea } from '@mantine/core';
-import { IconWifi, IconWifiOff, IconPlay, IconStop, IconRefresh, IconTestPipe, IconNetwork, IconCheck, IconX, IconClock, IconDatabase } from '@tabler/icons-react';
+import { IconWifi, IconWifiOff, IconPlayerPlay, IconPlayerStop, IconRefresh, IconTestPipe, IconNetwork, IconCheck, IconX, IconClock, IconDatabase } from '@tabler/icons-react';
 import { useSignalRMock } from '../lib/signalr-mock';
 
 interface SignalRIntegrationProps {
@@ -100,11 +100,11 @@ export const SignalRIntegration: React.FC<SignalRIntegrationProps> = ({
           {showControls && (
             <Group gap="xs">
               {!connection.isConnected ? (
-                <Button size="xs" onClick={connect} leftSection={<IconPlay size={12} />}>
+                <Button size="xs" onClick={connect} leftSection={<IconPlayerPlay size={12} />}>
                   連線
                 </Button>
               ) : (
-                <Button size="xs" onClick={disconnect} leftSection={<IconStop size={12} />}>
+                <Button size="xs" onClick={disconnect} leftSection={<IconPlayerStop size={12} />}>
                   斷線
                 </Button>
               )}
@@ -112,7 +112,7 @@ export const SignalRIntegration: React.FC<SignalRIntegrationProps> = ({
                 <Button 
                   size="xs" 
                   onClick={isSimulating ? stopSimulation : startSimulation}
-                  leftSection={isSimulating ? <IconStop size={12} /> : <IconPlay size={12} />}
+                  leftSection={isSimulating ? <IconPlayerStop size={12} /> : <IconPlayerPlay size={12} />}
                 >
                   {isSimulating ? '停止' : '模擬'}
                 </Button>
@@ -159,11 +159,11 @@ export const SignalRIntegration: React.FC<SignalRIntegrationProps> = ({
         {showControls && (
           <Group gap="xs">
             {!connection.isConnected ? (
-              <Button onClick={connect} leftSection={<IconPlay size={16} />}>
+              <Button onClick={connect} leftSection={<IconPlayerPlay size={16} />}>
                 建立連線
               </Button>
             ) : (
-              <Button onClick={disconnect} leftSection={<IconStop size={16} />}>
+              <Button onClick={disconnect} leftSection={<IconPlayerStop size={16} />}>
                 斷開連線
               </Button>
             )}
@@ -172,7 +172,7 @@ export const SignalRIntegration: React.FC<SignalRIntegrationProps> = ({
               <>
                 <Button 
                   onClick={isSimulating ? stopSimulation : startSimulation}
-                  leftSection={isSimulating ? <IconStop size={16} /> : <IconPlay size={16} />}
+                  leftSection={isSimulating ? <IconPlayerStop size={16} /> : <IconPlayerPlay size={16} />}
                 >
                   {isSimulating ? '停止模擬' : '開始模擬'}
                 </Button>

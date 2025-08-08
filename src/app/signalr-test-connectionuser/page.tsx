@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Title, Text, Button, Stack, Alert, Card, Group, Badge, TextInput, Select, Code, Divider } from '@mantine/core'
 import { IconWifi, IconWifiOff, IconTestPipe, IconSend, IconServer, IconInfoCircle, IconRefresh, IconMessage } from '@tabler/icons-react'
-import signalRTestClient, { SignalREvent } from '../../../lib/signalr-test-client'
+import signalRTestClient, { SignalREvent } from '../../lib/signalr-test-client'
 
 export default function SignalRTestConnectionUserPage() {
   const [connectionState, setConnectionState] = useState('Disconnected')
