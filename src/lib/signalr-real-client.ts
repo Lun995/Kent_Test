@@ -192,7 +192,7 @@ export class SignalRRealClient {
   getConnectionInfo(): SignalRConnection {
     return {
       isConnected: this.connection?.state === 'Connected',
-      connectionId: this.connection?.connectionId,
+      connectionId: this.connection?.connectionId || undefined,
       lastConnected: this.connection?.state === 'Connected' ? new Date() : undefined,
       lastDisconnected: this.connection?.state === 'Disconnected' ? new Date() : undefined,
       reconnectAttempts: this.reconnectAttempts,

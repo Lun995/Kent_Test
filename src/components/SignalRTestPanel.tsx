@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Card, Title, Text, Group, Button, Badge, Stack, Alert, Divider, ScrollArea } from '@mantine/core'
 import { IconWifi, IconWifiOff, IconPlayerPlay, IconPlayerStop, IconRefresh, IconTrash, IconTestPipe, IconNetwork } from '@tabler/icons-react'
-import { useSignalRMock } from '../lib/signalr-mock'
-import { simulateNetworkChanges, simulateEventSequence } from '../lib/signalr-mock'
+import { useSignalRMock, simulateNetworkChanges, simulateEventSequence, SignalREvent } from '../lib/signalr-mock'
 
 export const SignalRTestPanel: React.FC = () => {
   const {
@@ -53,8 +52,8 @@ export const SignalRTestPanel: React.FC = () => {
   }, [subscribe, unsubscribe])
 
   // 手動發送測試事件
-  const sendTestEvent = (eventType: string) => {
-    const testEvent = {
+  const sendTestEvent = (eventType: SignalREvent['type']) => {
+    const testEvent: Omit<SignalREvent, 'timestamp'> = {
       type: eventType,
       data: {
         orderId: `test-order-${Date.now()}`,
@@ -148,7 +147,7 @@ export const SignalRTestPanel: React.FC = () => {
             開始模擬
           </Button>
           <Button
-            leftSection={<IconStop size={16} />}
+                            leftSection={<IconPlayerStop size={16} />}
             onClick={stopSimulation}
             disabled={!isSimulating}
             variant="light"

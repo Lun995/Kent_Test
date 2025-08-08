@@ -1,7 +1,7 @@
-import { createClient } from '@planetscale/database'
+import { connect } from '@planetscale/database'
 
 // PlanetScale 資料庫連線
-const db = createClient({
+const db = connect({
   url: process.env.DATABASE_URL!,
   fetch: (url: string, init: any) => {
     delete (init as any)['cache']

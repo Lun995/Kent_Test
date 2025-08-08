@@ -26,7 +26,7 @@ export const orderOperations = {
       [order.order_number, order.customer_name, order.table_number, order.status, order.total_amount, order.notes]
     )
     const [rows] = await pool.execute('SELECT * FROM orders WHERE id = ?', [(result as any).insertId])
-    return rows[0] as Order
+    return (rows as any)[0] as Order
   },
 
   // 更新訂單狀態
@@ -59,7 +59,7 @@ export const orderOperations = {
       [item.order_id, item.item_name, item.quantity, item.unit_price, item.total_price, item.status, item.notes]
     )
     const [rows] = await pool.execute('SELECT * FROM order_items WHERE id = ?', [(result as any).insertId])
-    return rows[0] as OrderItem
+    return (rows as any)[0] as OrderItem
   },
 
   // 更新訂單項目狀態
@@ -93,7 +93,7 @@ export const actionHistoryOperations = {
       ]
     )
     const [rows] = await pool.execute('SELECT * FROM action_history WHERE id = ?', [(result as any).insertId])
-    return rows[0] as ActionHistory
+    return (rows as any)[0] as ActionHistory
   },
 
   // 取得操作歷史
@@ -127,7 +127,7 @@ export const actionHistoryOperations = {
     const [rows] = await pool.execute(
       'SELECT * FROM action_history ORDER BY created_at DESC LIMIT 1'
     )
-    return rows.length > 0 ? rows[0] as ActionHistory : null
+    return (rows as any).length > 0 ? (rows as any)[0] as ActionHistory : null
   },
 
   // 取得可回復的操作

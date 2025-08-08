@@ -412,7 +412,7 @@ export default function SignalRTestConnectionUserPage() {
             ) : (
               <Stack gap="sm">
                 {events.map((event, index) => (
-                  <Card key={index} withBorder p="sm" size="sm">
+                  <Card key={index} withBorder p="sm">
                     <Group justify="space-between" mb="xs">
                       <Badge color="blue" size="sm">
                         {event.type}

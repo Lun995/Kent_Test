@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { Container, Title, Text, Stack, Alert, Card, Group, Button, Badge, Divider, ScrollArea } from '@mantine/core'
 import { IconWifi, IconWifiOff, IconPlayerPlay, IconPlayerStop, IconRefresh, IconTestPipe, IconNetwork, IconCheck, IconX } from '@tabler/icons-react'
-import { useSignalRMock, simulateNetworkChanges, simulateEventSequence } from '../../lib/signalr-mock'
+import { useSignalRMock, simulateNetworkChanges, simulateEventSequence, SignalREvent } from '../../lib/signalr-mock'
 
 export default function SignalRDemoPage() {
   const {
@@ -89,7 +89,7 @@ export default function SignalRDemoPage() {
 
       // 測試 2: 事件發送測試
       addTestResult('event_send', '開始事件發送測試...', 'info')
-      const testEvent = {
+      const testEvent: Omit<SignalREvent, 'timestamp'> = {
         type: 'order_update',
         data: {
           orderId: 'test-order-001',
@@ -116,7 +116,7 @@ export default function SignalRDemoPage() {
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       // 嘗試在斷線狀態發送事件
-      const offlineEvent = {
+      const offlineEvent: Omit<SignalREvent, 'timestamp'> = {
         type: 'order_update',
         data: { orderId: 'offline-test' }
       }
@@ -137,7 +137,8 @@ export default function SignalRDemoPage() {
       addTestResult('summary', '所有測試完成！', 'success')
 
     } catch (error) {
-      addTestResult('error', `測試失敗: ${error.message}`, 'error')
+      const errorMessage = error instanceof Error ? error.message : '未知錯誤'
+      addTestResult('error', `測試失敗: ${errorMessage}`, 'error')
     } finally {
       setIsRunningTests(false)
     }
@@ -309,7 +310,7 @@ export default function SignalRDemoPage() {
               <Button
                 size="sm"
                 onClick={() => sendEvent({
-                  type: 'order_update',
+                  type: 'order_update' as const,
                   data: {
                     orderId: `manual-${Date.now()}`,
                     orderNumber: `MAN-${Math.floor(Math.random() * 1000)}`,
@@ -323,7 +324,7 @@ export default function SignalRDemoPage() {
               <Button
                 size="sm"
                 onClick={() => sendEvent({
-                  type: 'status_change',
+                  type: 'status_change' as const,
                   data: {
                     orderId: `manual-${Date.now()}`,
                     previousStatus: 'PENDING',
@@ -337,7 +338,7 @@ export default function SignalRDemoPage() {
               <Button
                 size="sm"
                 onClick={() => sendEvent({
-                  type: 'new_order',
+                  type: 'new_order' as const,
                   data: {
                     orderId: `manual-${Date.now()}`,
                     orderNumber: `MAN-${Math.floor(Math.random() * 1000)}`,
@@ -352,7 +353,7 @@ export default function SignalRDemoPage() {
               <Button
                 size="sm"
                 onClick={() => sendEvent({
-                  type: 'order_complete',
+                  type: 'order_complete' as const,
                   data: {
                     orderId: `manual-${Date.now()}`,
                     orderNumber: `MAN-${Math.floor(Math.random() * 1000)}`,

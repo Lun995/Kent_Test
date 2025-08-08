@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import signalRService, { ChatMessage, NotificationMessage } from '../services/signalRService';
+import signalRService, { ChatMessage, NotificationMessage } from '../service/signalRService';
 import './ChatApp.css';
 
 interface OnlineUser {

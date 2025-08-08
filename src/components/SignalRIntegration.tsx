@@ -147,9 +147,9 @@ export const SignalRIntegration: React.FC<SignalRIntegrationProps> = ({
           <Text size="sm">
             連線 ID: {connection.connectionId || '無'}
           </Text>
-          <Text size="sm">
-            最後連線: {formatTimestamp(connection.lastConnected)}
-          </Text>
+                     <Text size="sm">
+             最後連線: {formatTimestamp(connection.lastConnected || null)}
+           </Text>
           <Text size="sm">
             重連次數: {connection.reconnectAttempts}
           </Text>

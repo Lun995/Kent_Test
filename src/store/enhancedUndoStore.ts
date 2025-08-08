@@ -205,28 +205,28 @@ export const useEnhancedUndoStore = create<EnhancedUndoStore>()(
 
 // 執行撤銷操作
 async function executeUndo(action: UndoAction) {
-  const { frontendChanges, updateItems, updateSelectedItems } = useEnhancedUndoStore.getState();
+  const { updateItems, updateSelectedItems } = useEnhancedUndoStore.getState();
   
   switch (action.type) {
     case 'SELECT_ITEM':
-      if (frontendChanges.previousSelectedItemIds) {
-        updateSelectedItems(frontendChanges.previousSelectedItemIds);
+      if (action.frontendChanges.previousSelectedItemIds) {
+        updateSelectedItems(action.frontendChanges.previousSelectedItemIds);
       }
       break;
       
     case 'DELETE':
-      if (frontendChanges.deletedItems) {
+      if (action.frontendChanges.deletedItems) {
         const { items } = useEnhancedUndoStore.getState();
-        const newItems = [...items, ...frontendChanges.deletedItems];
+        const newItems = [...items, ...action.frontendChanges.deletedItems];
         updateItems(newItems);
       }
       break;
       
     case 'UPDATE':
-      if (frontendChanges.updatedItems) {
+      if (action.frontendChanges.updatedItems) {
         const { items } = useEnhancedUndoStore.getState();
         const newItems = items.map(item => {
-          const updatedItem = frontendChanges.updatedItems!.find(
+          const updatedItem = action.frontendChanges.updatedItems!.find(
             updated => updated.id === item.id
           );
           return updatedItem ? { ...item, ...updatedItem } : item;
@@ -236,10 +236,10 @@ async function executeUndo(action: UndoAction) {
       break;
       
     case 'CREATE':
-      if (frontendChanges.createdItems) {
+      if (action.frontendChanges.createdItems) {
         const { items } = useEnhancedUndoStore.getState();
         const newItems = items.filter(
-          item => !frontendChanges.createdItems!.some(
+          item => !action.frontendChanges.createdItems!.some(
             created => created.id === item.id
           )
         );
@@ -248,18 +248,18 @@ async function executeUndo(action: UndoAction) {
       break;
       
     case 'BATCH_DELETE':
-      if (frontendChanges.deletedItems) {
+      if (action.frontendChanges.deletedItems) {
         const { items } = useEnhancedUndoStore.getState();
-        const newItems = [...items, ...frontendChanges.deletedItems];
+        const newItems = [...items, ...action.frontendChanges.deletedItems];
         updateItems(newItems);
       }
       break;
       
     case 'STATUS_CHANGE':
-      if (frontendChanges.statusChanges) {
+      if (action.frontendChanges.statusChanges) {
         const { items } = useEnhancedUndoStore.getState();
         const newItems = items.map(item => {
-          const statusChange = frontendChanges.statusChanges!.find(
+          const statusChange = action.frontendChanges.statusChanges!.find(
             change => change.itemId === item.id
           );
           if (statusChange) {
@@ -275,20 +275,20 @@ async function executeUndo(action: UndoAction) {
 
 // 執行重做操作
 async function executeRedo(action: UndoAction) {
-  const { frontendChanges, updateItems, updateSelectedItems } = useEnhancedUndoStore.getState();
+  const { updateItems, updateSelectedItems } = useEnhancedUndoStore.getState();
   
   switch (action.type) {
     case 'SELECT_ITEM':
-      if (frontendChanges.selectedItemIds) {
-        updateSelectedItems(frontendChanges.selectedItemIds);
+      if (action.frontendChanges.selectedItemIds) {
+        updateSelectedItems(action.frontendChanges.selectedItemIds);
       }
       break;
       
     case 'DELETE':
-      if (frontendChanges.deletedItems) {
+      if (action.frontendChanges.deletedItems) {
         const { items } = useEnhancedUndoStore.getState();
         const newItems = items.filter(
-          item => !frontendChanges.deletedItems!.some(
+          item => !action.frontendChanges.deletedItems!.some(
             deleted => deleted.id === item.id
           )
         );
@@ -297,10 +297,10 @@ async function executeRedo(action: UndoAction) {
       break;
       
     case 'UPDATE':
-      if (frontendChanges.updatedItems) {
+      if (action.frontendChanges.updatedItems) {
         const { items } = useEnhancedUndoStore.getState();
         const newItems = items.map(item => {
-          const updatedItem = frontendChanges.updatedItems!.find(
+          const updatedItem = action.frontendChanges.updatedItems!.find(
             updated => updated.id === item.id
           );
           return updatedItem ? { ...item, ...updatedItem } : item;
@@ -310,18 +310,18 @@ async function executeRedo(action: UndoAction) {
       break;
       
     case 'CREATE':
-      if (frontendChanges.createdItems) {
+      if (action.frontendChanges.createdItems) {
         const { items } = useEnhancedUndoStore.getState();
-        const newItems = [...items, ...frontendChanges.createdItems];
+        const newItems = [...items, ...action.frontendChanges.createdItems];
         updateItems(newItems);
       }
       break;
       
     case 'BATCH_DELETE':
-      if (frontendChanges.deletedItems) {
+      if (action.frontendChanges.deletedItems) {
         const { items } = useEnhancedUndoStore.getState();
         const newItems = items.filter(
-          item => !frontendChanges.deletedItems!.some(
+          item => !action.frontendChanges.deletedItems!.some(
             deleted => deleted.id === item.id
           )
         );
@@ -330,10 +330,10 @@ async function executeRedo(action: UndoAction) {
       break;
       
     case 'STATUS_CHANGE':
-      if (frontendChanges.statusChanges) {
+      if (action.frontendChanges.statusChanges) {
         const { items } = useEnhancedUndoStore.getState();
         const newItems = items.map(item => {
-          const statusChange = frontendChanges.statusChanges!.find(
+          const statusChange = action.frontendChanges.statusChanges!.find(
             change => change.itemId === item.id
           );
           if (statusChange) {

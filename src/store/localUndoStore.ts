@@ -97,9 +97,10 @@ export const useLocalUndoStore = create<LocalUndoStore>()(
         })
       } catch (error) {
         console.error('同步失敗:', error)
+        const errorMessage = error instanceof Error ? error.message : '未知錯誤'
         set(state => ({
           pendingActions: [...state.pendingActions, newAction],
-          syncErrors: [...state.syncErrors, error.message]
+          syncErrors: [...state.syncErrors, errorMessage]
         }))
         get().saveToLocalStorage()
       }
@@ -154,9 +155,10 @@ export const useLocalUndoStore = create<LocalUndoStore>()(
         })
       } catch (error) {
         console.error('回復同步失敗:', error)
+        const errorMessage = error instanceof Error ? error.message : '未知錯誤'
         set(state => ({
           pendingActions: [...state.pendingActions, undoAction],
-          syncErrors: [...state.syncErrors, error.message]
+          syncErrors: [...state.syncErrors, errorMessage]
         }))
         get().saveToLocalStorage()
       }

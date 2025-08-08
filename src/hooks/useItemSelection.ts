@@ -24,7 +24,7 @@ export const useItemSelection = () => {
         type: 'SELECT_ITEM',
         items: [selectedItem],
         selectedItemId: newSelectedItemId,
-        previousSelectedItemId: previousSelectedItemId || null,
+        previousSelectedItemId: previousSelectedItemId || undefined,
         description: `選擇品項: ${description}`,
       });
 
