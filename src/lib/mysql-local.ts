@@ -9,10 +9,7 @@ const dbConfig = {
   database: process.env.MYSQL_DATABASE || 'kds_system',
   charset: 'utf8mb4',
   timezone: '+08:00',
-  connectionLimit: 10,
-  acquireTimeout: 60000,
-  timeout: 60000,
-  reconnect: true
+  connectionLimit: 10
 }
 
 // 建立連線池
