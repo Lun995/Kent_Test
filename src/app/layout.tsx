@@ -1,5 +1,6 @@
 "use client";
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
+import { GlobalContextProvider } from '../context/GlobalContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,7 +10,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <MantineProvider>
-          {children}
+          <GlobalContextProvider>
+            {children}
+          </GlobalContextProvider>
         </MantineProvider>
       </body>
     </html>

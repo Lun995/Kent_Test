@@ -3,9 +3,10 @@ import { Button } from '@mantine/core';
 
 interface AudioTestProps {
   isMobile: boolean;
+  isTablet?: boolean;
 }
 
-export const AudioTest: React.FC<AudioTestProps> = ({ isMobile }) => {
+export const AudioTest: React.FC<AudioTestProps> = ({ isMobile, isTablet = false }) => {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -60,34 +61,58 @@ export const AudioTest: React.FC<AudioTestProps> = ({ isMobile }) => {
 
   return (
     <>
-      {/* 音效測試按鈕 */}
+             {/* 聲音測試按鈕 */}
       <Button
-        variant="outline"
-        color="dark"
-        size={isMobile ? 'xs' : 'md'}
+        variant="filled"
+        color="blue"
+        size={isMobile ? 'xs' : isTablet ? 'sm' : 'md'}
         style={{
-          width: '100%',
-          flex: 1,
-          minWidth: 0,
-          maxWidth: '100%',
-          fontSize: isMobile ? '0.8rem' : '1.2rem',
+          width: 'calc(100% - 8px)',
+          height: 'calc(100% - 8px)',
+          fontSize: isMobile ? '0.9rem' : isTablet ? '1.1rem' : '1.3rem',
           fontWeight: 700,
-          margin: 0,
-          padding: isMobile ? '1px 2px' : '4px 8px',
+          margin: '0',
+          padding: '4px',
           boxSizing: 'border-box',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
-          background: isPlaying ? '#ff6b6b' : '#4ecdc4',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          borderRadius: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 2,
+          background: isPlaying ? '#ff6b6b' : '#007bff',
           color: '#fff',
-          borderColor: isPlaying ? '#ff5252' : '#26a69a',
+          border: isPlaying ? '2px solid #ff5252' : '2px solid #0056b3',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
         }}
         onClick={testAllSounds}
+        onMouseEnter={(e) => {
+          if (!isPlaying) {
+            e.currentTarget.style.backgroundColor = '#0056b3';
+            e.currentTarget.style.transform = 'scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isPlaying) {
+            e.currentTarget.style.backgroundColor = '#007bff';
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+          }
+        }}
       >
-        {isPlaying ? '🔊播放中' : '🔊音效測試'}
+                 <div style={{ fontSize: isMobile ? '1.0rem' : isTablet ? '1.2rem' : '1.4rem', fontWeight: 700, color: '#fff' }}>
+           {isPlaying ? '🔊播放中' : '聲音'}
+         </div>
+         <div style={{ fontSize: isMobile ? '1.0rem' : isTablet ? '1.2rem' : '1.4rem', fontWeight: 700, color: '#fff' }}>
+           {isPlaying ? '' : '測試'}
+         </div>
       </Button>
-
-      
     </>
   );
 }; 
