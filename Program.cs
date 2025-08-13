@@ -1,4 +1,4 @@
-using SignalRTest.Hubs;
+// TODO: 實作真實的 SignalR Hub
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +23,8 @@ var app = builder.Build();
 app.UseCors();
 
 // 設定路由
-app.MapHub<ChatHub>("/signalrhub");
+// TODO: 實作真實的 SignalR Hub
+// app.MapHub<ChatHub>("/signalrhub");
 
 // 測試端點
 app.MapGet("/", () => "SignalR Hub 服務正在運行！");

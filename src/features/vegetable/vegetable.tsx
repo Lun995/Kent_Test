@@ -1,1 +1,0 @@
-// 此檔案內容將被移動到 src/app/vegetable/page.tsx，原檔案可刪除。
