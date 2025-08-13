@@ -131,12 +131,15 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
   },
 
   itemNote: {
-    fontSize: isMobile ? '0.9rem' : isTablet ? '1.1rem' : '1.3rem',
+    fontSize: isMobile ? '0.7rem' : isTablet ? '0.9rem' : '1.0rem',
     color: '#d7263d',
     fontStyle: 'italic',
-    textAlign: 'center' as const,
+    textAlign: 'right' as const,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    alignSelf: 'flex-end',
+    marginRight: isMobile ? '8px' : '12px',
+    marginTop: '4px',
   },
 });

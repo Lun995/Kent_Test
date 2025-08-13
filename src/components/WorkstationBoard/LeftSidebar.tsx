@@ -8,6 +8,52 @@ import { CountdownButton } from './CountdownButton';
 import { NormalButton } from './NormalButton';
 import { SettingButton } from './SettingButton';
 
+// 工作站介面 - 更新為符合 KDS API 規格
+interface Workstation {
+  uid: number;
+  no: string;
+  name: string;
+  brandId: number;
+  storeId: number;
+  isOn: number;
+  serialNo: number;
+  memo: string;
+  creatorId: number;
+  createDate: string;
+  modifyId: number;
+  modifyDate: string;
+  isDisabled: number;
+  status: number;
+  companyId: number;
+  isDefault: number;
+  isAutoTimeOn: number;
+  isAutoOrderOn: number;
+  isAutoProductTypeOn: number;
+  isAutoProductOn: number;
+  kdsDiningType: number;
+  kdsStoreArea: number;
+  kdsDisplayTypeId: number;
+  isNoDisplay: number;
+  isOvertimeNotify: number;
+  isCookingNotify: number;
+  isMealSound: number;
+  isUrgingSound: number;
+  overtimeNotifyMin: number;
+  cookingNotifyMin: number;
+  isAllProduct: number;
+  progressiveTypeId: number;
+  autoTimeOnMin: number;
+  autoOrderOnQty: number;
+  nextWorkstationId: number;
+  isFirstStation: number;
+  isGoOn: number;
+  prevWorkstationId: number | null;
+  dineOver: number;
+  taskTime: number;
+  displayType: number;
+  cardType: number;
+}
+
 interface LeftSidebarProps {
   onPartialCancel: () => void;
   onHistoryRecord: () => void;
@@ -18,6 +64,9 @@ interface LeftSidebarProps {
   countdown: number;
   currentItem: number;
   totalItems: number;
+  workstations: Workstation[];
+  isLoadingWorkstations: boolean;
+  workstationError: string | null;
 }
 
 export function LeftSidebar({
@@ -29,7 +78,10 @@ export function LeftSidebar({
   currentWorkstation,
   countdown,
   currentItem,
-  totalItems
+  totalItems,
+  workstations,
+  isLoadingWorkstations,
+  workstationError
 }: LeftSidebarProps) {
   const { isMobile, isTablet } = useIsMobile();
   const { playSound } = useAudioPlayer();
@@ -108,9 +160,10 @@ export function LeftSidebar({
             onClick={handleWorkstationClick}
             color="gray"
             variant="workstation"
+            disabled={isLoadingWorkstations}
           >
             <div style={styles.workstationText}>
-              {currentWorkstation}
+              {isLoadingWorkstations ? '載入中...' : currentWorkstation}
             </div>
           </SettingButton>
         </div>
@@ -135,32 +188,46 @@ export function LeftSidebar({
           </div>
           
           <div style={styles.workstationMenuContent}>
-            {['刨肉區', '菜盤', '大盤'].map((station) => (
-              <div key={station} style={styles.workstationMenuItem}>
-                <Button
-                  variant="subtle"
-                  color="dark"
-                  size={isMobile ? 'lg' : 'xl'}
-                  style={{
-                    ...styles.workstationMenuButton,
-                    background: currentWorkstation === station ? '#e0e0e0' : '#fff',
-                  }}
-                  onClick={() => handleWorkstationSelect(station)}
-                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    if (currentWorkstation !== station) {
-                      e.currentTarget.style.backgroundColor = '#f0f0f0';
-                    }
-                  }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    if (currentWorkstation !== station) {
-                      e.currentTarget.style.backgroundColor = '#fff';
-                    }
-                  }}
-                >
-                  {station}
-                </Button>
+            {workstationError ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+                {workstationError}
               </div>
-            ))}
+            ) : isLoadingWorkstations ? (
+              <div style={{ padding: '20px', textAlign: 'center' }}>
+                載入中...
+              </div>
+            ) : workstations.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center' }}>
+                無可用工作站
+              </div>
+            ) : (
+              workstations.map((station) => (
+                <div key={station.uid} style={styles.workstationMenuItem}>
+                  <Button
+                    variant="subtle"
+                    color="dark"
+                    size={isMobile ? 'lg' : 'xl'}
+                    style={{
+                      ...styles.workstationMenuButton,
+                      background: currentWorkstation === station.name ? '#e0e0e0' : '#fff',
+                    }}
+                    onClick={() => handleWorkstationSelect(station.name)}
+                    onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      if (currentWorkstation !== station.name) {
+                        e.currentTarget.style.backgroundColor = '#f0f0f0';
+                      }
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      if (currentWorkstation !== station.name) {
+                        e.currentTarget.style.backgroundColor = '#fff';
+                      }
+                    }}
+                  >
+                    {station.name}
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
           
           <div style={styles.workstationMenuFooter}>

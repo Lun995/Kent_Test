@@ -91,7 +91,7 @@ export function WorkBoard({
                     ...styles.cardHeader,
                     background: timeColor,
                   }}>
-                    #1-製作中
+                    #1
                   </div>
                   <div style={styles.cardContent}>
                     {items.map((makingItem, idx) => (
@@ -135,7 +135,7 @@ export function WorkBoard({
                     ...styles.cardHeader,
                     background: '#009944',
                   }}>
-                    #2-Hold
+                    #2
                   </div>
                   <div style={styles.cardContent}>
                     {items.map((item, idx) => (
@@ -176,7 +176,7 @@ export function WorkBoard({
                     ...styles.cardHeader,
                     background: '#009944',
                   }}>
-                    #3-待製作
+                    #3
                   </div>
                   <div style={styles.cardContent}>
                     <div style={styles.itemRow}>
