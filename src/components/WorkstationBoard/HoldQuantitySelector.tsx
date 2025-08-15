@@ -41,12 +41,12 @@ export function HoldQuantitySelector({
       title="HOLD 品項數量"
       size="sm"
     >
-      <Stack spacing="md">
-        <Text size="sm" color="dimmed">
+      <Stack gap="md">
+        <Text size="sm" c="dimmed">
           品項：{item.name}
         </Text>
         
-        <Text size="sm" color="dimmed">
+        <Text size="sm" c="dimmed">
           已完成：{item.completedCount} / {item.originalCount}
         </Text>
 
@@ -60,7 +60,7 @@ export function HoldQuantitySelector({
           required
         />
 
-        <Group position="apart" mt="md">
+        <Group justify="space-between" mt="md">
           <Button variant="outline" onClick={handleClose}>
             取消
           </Button>

@@ -1,0 +1,44 @@
+# 依賴目錄
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 構建輸出
+.next/
+out/
+dist/
+
+# 環境變數文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日誌文件
+*.log
+
+# 測試文件
+__tests__/
+*.test.js
+*.test.ts
+*.test.tsx
+
+# 開發工具配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系統文件
+.DS_Store
+Thumbs.db
+
+# Git相關
+.git/
+.gitignore
+
+# 其他
+README.md
+*.md
