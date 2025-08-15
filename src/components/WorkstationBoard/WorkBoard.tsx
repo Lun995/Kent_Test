@@ -1,9 +1,10 @@
 "use client";
-import { Badge, Table } from '@mantine/core';
+import { useEffect } from 'react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { workBoardStyles } from '../../styles/workBoardStyles';
 
 interface OrderItem {
+  id: string;
   name: string;
   count: number;
   table: string;
@@ -18,36 +19,51 @@ interface CategoryItems {
 
 interface WorkBoardProps {
   categoryItems: CategoryItems;
-  selectedItem: { category: keyof CategoryItems; name: string } | null;
-  onItemSelect: (item: { category: keyof CategoryItems; name: string }) => void;
-  onItemDoubleClick: (category: keyof CategoryItems, name: string) => void;
   timeColor: string;
+  selectedMakingItem: string | null;
+  clickedMakingItems: Set<string>;
+  onMakingItemSelect: (itemIdentifier: string) => void;
+  selectedHoldItem: string | null;
+  clickedHoldItems: Set<string>;
+  onHoldItemSelect: (itemIdentifier: string) => void;
+  hiddenMakingCards: Set<string>;
+  hiddenHoldCards: Set<string>;
+  onCardHeaderDoubleClick: (cardType: 'making' | 'hold', cardKey: string) => void;
 }
 
 export function WorkBoard({
   categoryItems,
-  selectedItem,
-  onItemSelect,
-  onItemDoubleClick,
-  timeColor
+  timeColor,
+  selectedMakingItem,
+  clickedMakingItems,
+  onMakingItemSelect,
+  selectedHoldItem,
+  clickedHoldItems,
+  onHoldItemSelect,
+  hiddenMakingCards,
+  hiddenHoldCards,
+  onCardHeaderDoubleClick
 }: WorkBoardProps) {
   const { isMobile, isTablet } = useIsMobile();
   const styles = workBoardStyles({ isMobile, isTablet });
 
-  // 彙總同名品項的數量
-  function summarizeItems(items: OrderItem[]): { name: string; count: number }[] {
-    const summary: Record<string, number> = {};
-    items.forEach(item => {
-      if (!summary[item.name]) {
-        summary[item.name] = 0;
-      }
-      summary[item.name] += item.count;
+  // 監聽製作中牌卡狀態，當沒有可見牌卡時觸發遞補
+  useEffect(() => {
+    // 檢查製作中是否有可見的牌卡
+    const visibleMakingCards = Object.keys(groupItemsByTable(categoryItems.making)).filter(tableName => {
+      const cardKey = `making-${tableName}`;
+      return !hiddenMakingCards.has(cardKey);
     });
-    return Object.entries(summary).map(([name, count]) => ({ name, count }));
-  }
+    
+    // 如果沒有可見的製作中牌卡，且有待製作品項，則觸發遞補
+    if (visibleMakingCards.length === 0 && categoryItems.waiting.length > 0) {
+      console.log('檢測到製作中沒有可見牌卡，觸發遞補邏輯');
+      // 這裡可以觸發遞補邏輯，或者通知父組件
+    }
+  }, [categoryItems.making, categoryItems.waiting, hiddenMakingCards]);
 
-  // 按品項名稱分組，但保持備註分開
-  function groupItemsByCategory(items: OrderItem[]) {
+  // 按品項名稱分組，保持原本的製作中顯示方式
+  function groupItemsByName(items: OrderItem[]) {
     return items.reduce((acc, item) => {
       const key = item.name;
       if (!acc[key]) {
@@ -58,144 +74,372 @@ export function WorkBoard({
     }, {} as Record<string, OrderItem[]>);
   }
 
+  // 按桌號分組，讓同一桌號的品項合併為一張牌卡
+  function groupItemsByTable(items: OrderItem[]) {
+    return items.reduce((acc, item) => {
+      const key = item.table;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
+    }, {} as Record<string, OrderItem[]>);
+  }
+
   return (
     <div style={styles.container}>
-      <Table
-        highlightOnHover={false}
-        style={styles.table}
-      >
+      <table style={styles.table}>
         <tbody style={styles.tbody}>
           <tr style={styles.tableRow}>
-            {/* 製作中 */}
+            {/* 製作中欄位 */}
             <td style={styles.tableCell}>
               <div style={styles.columnHeader}>製作中</div>
-              {Object.entries(groupItemsByCategory(categoryItems.making)).map(([itemName, items]) => (
-                <div
-                  key={itemName}
-                  style={{
-                    ...styles.orderCard,
-                    border: selectedItem && selectedItem.category === 'making' && selectedItem.name === itemName 
-                      ? '4px solid #d7263d' 
-                      : timeColor === '#d7263d' 
-                        ? '2px solid #d7263d' 
-                        : '2px solid #222',
-                    boxShadow: timeColor === '#d7263d' 
-                      ? '0 4px 12px rgba(215, 38, 61, 0.3)' 
-                      : '0 2px 8px rgba(0,0,0,0.1)',
-                    animation: timeColor === '#d7263d' ? 'pulse 2s infinite' : 'none',
-                  }}
-                  onClick={() => onItemSelect({ category: 'making', name: itemName })}
-                  onDoubleClick={() => onItemDoubleClick('making', itemName)}
-                >
-                  <div style={{
-                    ...styles.cardHeader,
-                    background: timeColor,
-                  }}>
-                    #1
-                  </div>
-                  <div style={styles.cardContent}>
-                    {items.map((makingItem, idx) => (
-                      <div key={`${makingItem.table}-${makingItem.note || 'no-note'}`} style={styles.itemRow}>
-                        <span style={styles.itemName}>{makingItem.name}</span>
-                        <Badge 
-                          color="gray" 
-                          size="md" 
-                          style={styles.itemBadge}
-                        >
-                          {makingItem.count}
-                        </Badge>
-                      </div>
-                    ))}
-                    {items.some(item => item.note) && (
-                      <div style={styles.itemNote}>
-                        -雪花多一點
-                      </div>
+              {Object.entries(groupItemsByTable(categoryItems.making)).map(([tableName, items], idx) => {
+                const cardKey = `making-${tableName}`;
+                if (hiddenMakingCards.has(cardKey)) return null;
+                
+                // 根據桌號分配固定的牌卡號碼，保持與待製作時的號碼一致
+                let cardNumber;
+                if (tableName === 'C1') {
+                  cardNumber = 1;
+                } else if (tableName === 'C2') {
+                  cardNumber = 2;
+                } else if (tableName === 'C3') {
+                  cardNumber = 3;
+                } else if (tableName === '內用A1') {
+                  cardNumber = 1;
+                } else if (tableName === '內用A2') {
+                  cardNumber = 2;
+                } else {
+                  cardNumber = idx + 1; // 其他桌號使用索引+1
+                }
+                
+                return (
+                  <div
+                    key={tableName}
+                    className={timeColor === '#d7263d' ? 'overdue-card' : ''}
+                    style={{
+                      ...styles.orderCard,
+                      border: timeColor === '#d7263d' ? '3px solid #d7263d' : '2px solid #222',
+                      boxShadow: timeColor === '#d7263d' ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <div 
+                      style={{
+                        ...styles.cardHeader,
+                        background: timeColor,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                      }}
+                      onDoubleClick={() => onCardHeaderDoubleClick('making', cardKey)}
+                      title="雙擊隱藏此牌卡"
+                    >
+                      #{cardNumber}
+                    {timeColor === '#d7263d' && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '20px',
+                        height: '20px',
+                        background: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ff6b35\'%3E%3Cpath d=\'M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2M12 8C13.1 8 14 8.9 14 10C14 11.1 13.1 12 12 12C10.9 12 10 11.1 10 10C10 8.9 10.9 8 12 8M12 14C13.1 14 14 14.9 14 16C14 17.1 13.1 18 12 18C10.9 18 10 17.1 10 16C10 14.9 10.9 14 12 14Z\'/%3E%3C/svg%3E") no-repeat center center',
+                        backgroundSize: 'contain',
+                        animation: 'flame 1.5s infinite',
+                        opacity: 0.8,
+                        zIndex: 1,
+                      }} />
                     )}
                   </div>
-                </div>
-              ))}
-            </td>
-
-            {/* Hold */}
-            <td style={styles.tableCell}>
-              <div style={styles.columnHeader}>Hold</div>
-              {Object.entries(groupItemsByCategory(categoryItems.hold)).map(([itemName, items]) => (
-                <div
-                  key={itemName}
-                  style={{
-                    ...styles.orderCard,
-                    border: selectedItem && selectedItem.category === 'hold' && selectedItem.name === itemName 
-                      ? '4px solid #d7263d' 
-                      : '2px solid #222',
-                  }}
-                  onClick={() => onItemSelect({ category: 'hold', name: itemName })}
-                  onDoubleClick={() => onItemDoubleClick('hold', itemName)}
-                >
-                  <div style={{
-                    ...styles.cardHeader,
-                    background: '#009944',
-                  }}>
-                    #2
-                  </div>
                   <div style={styles.cardContent}>
-                    {items.map((item, idx) => (
-                      <div key={`${item.table}-${item.note || 'no-note'}`} style={styles.itemRow}>
-                        <span style={styles.itemName}>{item.name}</span>
-                        <Badge 
-                          color="gray" 
-                          size="md" 
-                          style={styles.itemBadge}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                      {items.map((makingItem, itemIdx) => (
+                        <div
+                          key={makingItem.id}
+                          onClick={() => onMakingItemSelect(makingItem.id)}
+                          onMouseEnter={(e) => {
+                            if (!clickedMakingItems.has(makingItem.id)) {
+                              e.currentTarget.style.backgroundColor = '#f0f0f0';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!clickedMakingItems.has(makingItem.id)) {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }
+                          }}
+                          style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '12px',
+                            borderRadius: '4px',
+                            marginBottom: '8px',
+                            cursor: 'pointer',
+                            backgroundColor: clickedMakingItems.has(makingItem.id) ? '#d3d3d3' : '#fff',
+                            border: selectedMakingItem === makingItem.id ? '2px solid #ff0000' : '2px solid #ddd',
+                            borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                            transition: 'all 0.2s ease',
+                          }}
                         >
-                          {item.count}
-                        </Badge>
+                          <div style={{ 
+                            display: 'flex', 
+                            width: '100%', 
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <div style={{ 
+                              flex: '0 0 70%', 
+                              textAlign: 'center',
+                              minWidth: 0,
+                              overflow: 'hidden'
+                            }}>
+                              <span style={styles.itemName}>
+                                {makingItem.name}
+                              </span>
+                              {makingItem.note && (
+                                <span style={{ ...styles.itemNote, fontSize: '0.9em', color: '#666' }}>
+                                  ({makingItem.note})
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ 
+                              flex: '0 0 30%', 
+                              textAlign: 'center',
+                              minWidth: 0
+                            }}>
+                              <span style={{
+                                ...styles.itemBadge,
+                                display: 'inline-block',
+                                padding: '6px 10px',
+                                backgroundColor: '#6c757d',
+                                color: 'white',
+                                borderRadius: '4px',
+                                fontSize: '1.4rem',
+                                fontWeight: '600'
+                              }}>
+                                {makingItem.count}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                                              ))}
                       </div>
-                    ))}
-                    {items.some(item => item.note) && (
-                      <div style={styles.itemNote}>
-                        -雪花多一點
-                      </div>
-                    )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </td>
 
-            {/* 待製作 */}
-            <td style={styles.tableCell}>
-              <div style={styles.columnHeader}>待製作</div>
-              {summarizeItems(categoryItems.waiting).map((item, idx) => (
+                        {/* Hold 欄位 - 放在製作中與待製作中間 */}
+            {categoryItems.hold.length > 0 && !hiddenHoldCards.has('hold-main') && (
+              <td style={styles.tableCell}>
+                <div style={styles.columnHeader}>Hold</div>
+                {/* 合併所有Hold品項到同一張牌卡 */}
                 <div
-                  key={item.name}
                   style={{
                     ...styles.orderCard,
-                    opacity: 0.5,
-                    cursor: 'not-allowed',
+                    border: '2px solid #222',
                   }}
                 >
-                  <div style={{
-                    ...styles.cardHeader,
-                    background: '#009944',
-                  }}>
-                    #3
+                  <div 
+                    style={{
+                      ...styles.cardHeader,
+                      background: '#ffc107', // 黃色背景
+                      position: 'relative',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      height: '40px', // 設定表頭高度
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    onDoubleClick={() => onCardHeaderDoubleClick('hold', 'hold-main')}
+                    title="雙擊隱藏此牌卡"
+                  >
+                    {/* 表頭只顯示黃色背景，不顯示文字 */}
                   </div>
                   <div style={styles.cardContent}>
-                    <div style={styles.itemRow}>
-                      <span style={styles.itemName}>{item.name}</span>
-                      <Badge 
-                        color="gray" 
-                        size="md" 
-                        style={styles.itemBadge}
-                      >
-                        {item.count}
-                      </Badge>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                      {/* 渲染Hold品項 */}
+                                              {categoryItems.hold.map((item, itemIdx) => (
+                        <div
+                          key={`temp-${item.id}`}
+                          style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '12px',
+                            borderRadius: '4px',
+                            marginBottom: '8px',
+                            backgroundColor: clickedHoldItems.has(item.id) ? '#d3d3d3' : '#fff',
+                            border: selectedHoldItem === item.id ? '2px solid #ff0000' : '2px solid #ddd',
+                            borderBottom: itemIdx < categoryItems.hold.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => onHoldItemSelect(item.id)}
+                          onMouseEnter={(e) => {
+                            if (!clickedHoldItems.has(item.id)) {
+                              e.currentTarget.style.backgroundColor = '#f0f0f0';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!clickedHoldItems.has(item.id)) {
+                              e.currentTarget.style.backgroundColor = '#f0f0f0';
+                            }
+                          }}
+                        >
+                          <div style={{ 
+                            display: 'flex', 
+                            width: '100%', 
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <div style={{ 
+                              flex: '0 0 70%', 
+                              textAlign: 'center',
+                              minWidth: 0,
+                              overflow: 'hidden'
+                            }}>
+                              <span style={styles.itemName}>
+                                {item.name}
+                              </span>
+                              {item.note && (
+                                <span style={{ ...styles.itemNote, fontSize: '0.9em', color: '#666' }}>
+                                  ({item.note})
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ 
+                              flex: '0 0 30%', 
+                              textAlign: 'center',
+                              minWidth: 0
+                            }}>
+                              <span style={{
+                                ...styles.itemBadge,
+                                display: 'inline-block',
+                                padding: '6px 10px',
+                                backgroundColor: '#6c757d',
+                                color: 'white',
+                                borderRadius: '4px',
+                                fontSize: '1.4rem',
+                                fontWeight: '600'
+                              }}>
+                                {item.count}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
                     </div>
                   </div>
                 </div>
-              ))}
+              </td>
+            )}
+
+            {/* 待製作欄位 */}
+            <td style={styles.tableCell}>
+              <div style={styles.columnHeader}>待製作</div>
+              {Object.entries(groupItemsByTable(categoryItems.waiting)).map(([tableName, items], idx) => {
+                // 待製作牌卡使用固定的編號，不因製作中牌卡消失而改變
+                // 根據桌號分配固定的編號
+                let cardNumber;
+                if (tableName === 'C1') {
+                  cardNumber = 1;
+                } else if (tableName === 'C2') {
+                  cardNumber = 2;
+                } else if (tableName === 'C3') {
+                  cardNumber = 3;
+                } else {
+                  cardNumber = idx + 1; // 其他桌號使用索引+1
+                }
+                
+                // 如果製作中沒有品項，待製作牌卡號碼仍然保持固定
+                // 不會因為製作中空而變成#1、#2
+                
+                return (
+                  <div
+                    key={tableName}
+                    style={{
+                      ...styles.orderCard,
+                      border: '2px solid #222',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      opacity: 0.5,
+                      cursor: 'not-allowed',
+                    }}
+                  >
+                    <div style={{
+                      ...styles.cardHeader,
+                      background: '#009944',
+                    }}>
+                      #{cardNumber}
+                    </div>
+                    <div style={styles.cardContent}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                        {items.map((item, itemIdx) => (
+                          <div
+                            key={`${item.table}-${item.note || 'no-note'}`}
+                            style={{
+                              border: '2px solid #ddd',
+                              borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              padding: '12px',
+                              borderRadius: '4px',
+                              marginBottom: '8px',
+                              backgroundColor: '#fff',
+                            }}
+                          >
+                            <div style={{ 
+                              display: 'flex', 
+                              width: '100%', 
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}>
+                              <div style={{ 
+                                flex: '0 0 70%', 
+                                textAlign: 'center',
+                                minWidth: 0,
+                                overflow: 'hidden'
+                              }}>
+                                <span style={styles.itemName}>
+                                  {item.name}
+                                </span>
+                                {item.note && (
+                                  <span style={{ ...styles.itemNote, fontSize: '0.9em', color: '#666' }}>
+                                    ({item.note})
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ 
+                                flex: '0 0 30%', 
+                                textAlign: 'center',
+                                minWidth: 0
+                              }}>
+                                <span style={{
+                                  ...styles.itemBadge,
+                                  display: 'inline-block',
+                                  padding: '6px 10px',
+                                  backgroundColor: '#6c757d',
+                                  color: 'white',
+                                  borderRadius: '4px',
+                                  fontSize: '1.4rem',
+                                  fontWeight: '600'
+                                }}>
+                                  {item.count}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </td>
           </tr>
         </tbody>
-      </Table>
+      </table>
     </div>
   );
 }

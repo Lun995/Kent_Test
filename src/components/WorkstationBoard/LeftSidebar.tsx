@@ -1,7 +1,7 @@
 "use client";
 import { Button } from '@mantine/core';
 import { useState } from 'react';
-import { useAudioPlayer } from '../../hooks/useAudioPlayer';
+
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { leftSidebarStyles } from '../../styles/leftSidebarStyles';
 import { CountdownButton } from './CountdownButton';
@@ -67,6 +67,9 @@ interface LeftSidebarProps {
   workstations: Workstation[];
   isLoadingWorkstations: boolean;
   workstationError: string | null;
+  selectedMakingItem: string | null;
+  selectedHoldItem: string | null; // 新增：選中的Hold品項
+  onHoldSelectedItem: () => void;
 }
 
 export function LeftSidebar({
@@ -81,14 +84,15 @@ export function LeftSidebar({
   totalItems,
   workstations,
   isLoadingWorkstations,
-  workstationError
+  workstationError,
+  selectedMakingItem,
+  selectedHoldItem,
+  onHoldSelectedItem
 }: LeftSidebarProps) {
   const { isMobile, isTablet } = useIsMobile();
-  const { playSound } = useAudioPlayer();
   const [showWorkstationMenu, setShowWorkstationMenu] = useState(false);
 
   const handleCountdownReset = () => {
-    playSound('/notification.mp3');
     // 這裡應該觸發倒數計時重置邏輯
   };
 
@@ -116,14 +120,13 @@ export function LeftSidebar({
           />
         </div>
 
-        {/* 欄位 2: 部分銷單按鈕 */}
+        {/* 欄位 2: HOLD 按鈕 */}
         <div style={styles.buttonField}>
           <NormalButton
-            onClick={onPartialCancel}
+            onClick={(selectedMakingItem || selectedHoldItem) ? onHoldSelectedItem : onPartialCancel}
             color="blue"
           >
-            <div style={styles.buttonText}>部分</div>
-            <div style={styles.buttonText}>銷單</div>
+            <div style={styles.buttonText}>HOLD</div>
           </NormalButton>
         </div>
 
