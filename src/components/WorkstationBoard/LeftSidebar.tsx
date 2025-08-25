@@ -67,8 +67,8 @@ interface LeftSidebarProps {
   workstations: Workstation[];
   isLoadingWorkstations: boolean;
   workstationError: string | null;
-  selectedMakingItem: string | null;
-  selectedHoldItem: string | null; // 新增：選中的Hold品項
+  selectedMakingItem: any;
+  selectedHoldItem: any;
   onHoldSelectedItem: () => void;
 }
 
@@ -91,9 +91,24 @@ export function LeftSidebar({
 }: LeftSidebarProps) {
   const { isMobile, isTablet } = useIsMobile();
   const [showWorkstationMenu, setShowWorkstationMenu] = useState(false);
+  const [punchInTime, setPunchInTime] = useState<string | null>(null);
+  const [isPunchedIn, setIsPunchedIn] = useState(false);
 
   const handleCountdownReset = () => {
-    // 這裡應該觸發倒數計時重置邏輯
+    // 打卡機功能：記錄打卡時間或重置
+    if (!isPunchedIn) {
+      // 打卡
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('zh-TW', { hour12: false });
+      setPunchInTime(timeString);
+      setIsPunchedIn(true);
+      console.log('打卡時間:', timeString);
+    } else {
+      // 重置打卡
+      setPunchInTime(null);
+      setIsPunchedIn(false);
+      console.log('打卡已重置');
+    }
   };
 
   const handleWorkstationClick = () => {
@@ -110,13 +125,15 @@ export function LeftSidebar({
   return (
     <div style={styles.container}>
       <div style={styles.buttonContainer}>
-        {/* 欄位 1: 倒數計時按鈕 */}
+        {/* 欄位 1: 打卡機按鈕 */}
         <div style={styles.buttonField}>
           <CountdownButton
             onClick={handleCountdownReset}
             currentItem={currentItem}
             totalItems={totalItems}
             countdown={countdown}
+            isPunchedIn={isPunchedIn}
+            punchInTime={punchInTime}
           />
         </div>
 

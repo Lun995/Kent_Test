@@ -9,6 +9,8 @@ interface CountdownButtonProps {
   totalItems: number;
   countdown: number;
   disabled?: boolean;
+  isPunchedIn?: boolean;
+  punchInTime?: string | null;
 }
 
 export function CountdownButton({ 
@@ -16,7 +18,9 @@ export function CountdownButton({
   currentItem, 
   totalItems, 
   countdown,
-  disabled = false 
+  disabled = false,
+  isPunchedIn = false,
+  punchInTime = null
 }: CountdownButtonProps) {
   const { isMobile, isTablet } = useIsMobile();
   const styles = countdownButtonStyles({ isMobile, isTablet });
@@ -24,7 +28,7 @@ export function CountdownButton({
   return (
     <Button
       variant="filled"
-      color="dark"
+      color={isPunchedIn ? "green" : "dark"}
       size={isMobile ? 'xs' : isTablet ? 'sm' : 'md'}
       style={styles.button}
       onClick={onClick}
@@ -44,15 +48,33 @@ export function CountdownButton({
         }
       }}
     >
-      <div style={styles.countdownText}>
-        {currentItem}/{totalItems}項
-      </div>
-      <div style={styles.countdownText}>
-        {countdown}秒
-      </div>
-      <div style={styles.countdownText}>
-        自動
-      </div>
+      {isPunchedIn ? (
+        // 打卡後的顯示
+        <>
+          <div style={styles.countdownText}>
+            已打卡
+          </div>
+          <div style={styles.countdownText}>
+            {punchInTime}
+          </div>
+          <div style={styles.countdownText}>
+            點擊重置
+          </div>
+        </>
+      ) : (
+        // 未打卡的顯示
+        <>
+          <div style={styles.countdownText}>
+            {currentItem}/{totalItems}項
+          </div>
+          <div style={styles.countdownText}>
+            {countdown}秒
+          </div>
+          <div style={styles.countdownText}>
+            點擊打卡
+          </div>
+        </>
+      )}
     </Button>
   );
 }

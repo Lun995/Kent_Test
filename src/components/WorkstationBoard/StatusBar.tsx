@@ -15,8 +15,8 @@ export function StatusBar({ pendingBatches, overdueBatches }: StatusBarProps) {
     <div style={styles.container}>
       {/* 待製作批次 */}
       <div style={styles.statusItem}>
-        <div style={styles.statusNumber}>{pendingBatches}</div>
         <span style={styles.statusText}>待製作批次</span>
+        <div style={styles.statusNumber}>{pendingBatches}</div>
       </div>
       
       {/* 逾時批次 */}

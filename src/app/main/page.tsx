@@ -85,13 +85,15 @@ export default function WorkstationBoard() {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [categoryItems, setCategoryItems] = useState<CategoryItems>({
     making: [
-      { id: 'snow-beef-1', name: '雪花牛', count: 3, table: '內用A1' },
-      { id: 'snow-beef-2', name: '雪花牛', count: 1, table: '內用A1', note: '雪花多一點' },
+      { id: 'snow-beef-1', name: '雪花牛', count: 3, table: '內用A1', note: '油花少一點' },
+      { id: 'snow-beef-2', name: '雪花牛', count: 1, table: '內用A1', note: '雪花多一點雪花多一點雪花多一點很重要所以獎三遍' },
+      { id: 'premium-pork-making', name: '上選豬肉', count: 10, table: '內用A1' },
     ],
     hold: [],
     waiting: [
       { id: 'pork-fish-combo', name: '豬魚雙饗', count: 2, table: 'C2', note: '上選豬+魚片' },
       { id: 'beef-combo', name: '絕代雙牛', count: 1, table: 'C2', note: '雪花牛+嫩煎牛' },
+      { id: 'snow-beef-c2', name: '雪花牛', count: 1, table: 'C2', note: '油花少一點' },
       { id: 'premium-pork', name: '上選豬肉', count: 5, table: 'C3' },
     ],
   });
