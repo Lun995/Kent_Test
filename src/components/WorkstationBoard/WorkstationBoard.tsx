@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { LeftSidebar } from './LeftSidebar';
 import { StatusBar } from './StatusBar';
 import { WorkBoard } from './WorkBoard';
-import { PartialCancelModal } from './PartialCancelModal';
+import { SimplePartialCancelModal } from './SimplePartialCancelModal';
 import { SelectItemModal } from './SelectItemModal';
 import { BackupScreen } from './BackupScreen';
 import { Clock } from './Clock';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { GlobalContextProvider } from '../../context/GlobalContext';
 
 // 工作站介面
 interface Workstation {
@@ -141,16 +142,18 @@ export function WorkstationBoard() {
 
   const [categoryItems, setCategoryItems] = useState<CategoryItems>({
     making: [
-      { id: '1', name: '漢堡', count: 2, table: 'A1', note: '不要洋蔥' },
+      { id: '1', name: '漢堡', count: 2, table: 'A1', note: '不要洋蔥，請加生菜和番茄，醬料要少一點，麵包要烤得稍微焦一點' },
       { id: '2', name: '薯條', count: 1, table: 'A2' },
       { id: '3', name: '可樂', count: 3, table: 'B1' }
     ],
     hold: [
-      { id: '4', name: '雞塊', count: 1, table: 'C1', note: '等待確認' }
+      { id: '4', name: '雞塊', count: 1, table: 'C1', note: '等待確認，客人說要等朋友來了再決定要不要' }
     ],
     waiting: [
       { id: '5', name: '沙拉', count: 2, table: 'D1' },
-      { id: '6', name: '冰淇淋', count: 1, table: 'E1' }
+      { id: '6', name: '冰淇淋', count: 1, table: 'E1' },
+      { id: '7', name: '披薩', count: 1, table: 'F1', note: '瑪格麗特披薩，不要橄欖，多放起司，邊緣要烤得脆一點' },
+      { id: '8', name: '義大利麵', count: 2, table: 'G1', note: '奶油蘑菇義大利麵，麵條要煮得稍微硬一點，不要放太多奶油' }
     ]
   });
 
@@ -237,98 +240,104 @@ export function WorkstationBoard() {
 
   if (showBackupScreen) {
     return (
-      <BackupScreen
-        onClose={() => setShowBackupScreen(false)}
-        totalItems={totalItems}
-      />
+      <GlobalContextProvider>
+        <BackupScreen
+          isVisible={true}
+          onClose={() => setShowBackupScreen(false)}
+          totalCount={totalItems}
+        />
+      </GlobalContextProvider>
     );
   }
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      height: '100vh',
-      backgroundColor: '#f5f5f5'
-    }}>
-      {/* 左側邊欄 */}
-      <LeftSidebar
-        onPartialCancel={handlePartialCancel}
-        onHistoryRecord={handleHistoryRecord}
-        onBackupTotal={handleBackupTotal}
-        onWorkstationChange={handleWorkstationChange}
-        onSettings={handleSettings}
-        currentWorkstation={currentWorkstation}
-        countdown={countdown}
-        currentItem={currentItem}
-        totalItems={totalItems}
-        workstations={workstations}
-        isLoadingWorkstations={false}
-        workstationError={null}
-        selectedMakingItem={selectedMakingItem}
-        selectedHoldItem={selectedHoldItem}
-        onHoldSelectedItem={handleHoldSelectedItem}
-      />
-
-      {/* 主要內容區域 */}
+    <GlobalContextProvider>
       <div style={{ 
-        flex: 1, 
         display: 'flex', 
-        flexDirection: 'column',
-        overflow: 'hidden'
+        height: '100vh',
+        backgroundColor: '#f5f5f5'
       }}>
-        {/* 頂部狀態欄 */}
-        <StatusBar
-          waitingBatches={waitingBatches}
-          overtimeBatches={overtimeBatches}
+        {/* 左側邊欄 */}
+        <LeftSidebar
+          onPartialCancel={handlePartialCancel}
+          onHistoryRecord={handleHistoryRecord}
+          onBackupTotal={handleBackupTotal}
+          onWorkstationChange={handleWorkstationChange}
+          onSettings={handleSettings}
+          currentWorkstation={currentWorkstation}
+          countdown={countdown}
+          currentItem={currentItem}
+          totalItems={totalItems}
+          workstations={workstations}
+          isLoadingWorkstations={false}
+          workstationError={null}
+          selectedMakingItem={selectedMakingItem}
+          selectedHoldItem={selectedHoldItem}
+          onHoldSelectedItem={handleHoldSelectedItem}
         />
 
-        {/* 時鐘 */}
+        {/* 主要內容區域 */}
         <div style={{ 
-          position: 'absolute', 
-          top: '20px', 
-          right: '20px', 
-          zIndex: 10 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}>
-          <Clock />
-        </div>
-
-        {/* 工作看板 */}
-        <div style={{ flex: 1, overflow: 'auto' }}>
-          <WorkBoard
-            categoryItems={categoryItems}
-            timeColor={countdown < 60 ? '#ff4444' : '#333'}
-            selectedMakingItem={selectedMakingItem}
-            clickedMakingItems={clickedMakingItems}
-            onMakingItemSelect={handleMakingItemSelect}
-            selectedHoldItem={selectedHoldItem}
-            clickedHoldItems={clickedHoldItems}
-            onHoldItemSelect={handleHoldItemSelect}
-            hiddenMakingCards={hiddenMakingCards}
-            hiddenHoldCards={hiddenHoldCards}
-            onCardHeaderDoubleClick={handleCardHeaderDoubleClick}
+          {/* 頂部狀態欄 */}
+          <StatusBar
+            pendingBatches={waitingBatches}
+            overdueBatches={overtimeBatches}
           />
+
+          {/* 時鐘 */}
+          <div style={{ 
+            position: 'absolute', 
+            top: '20px', 
+            right: '20px', 
+            zIndex: 10 
+          }}>
+            <Clock />
+          </div>
+
+          {/* 工作看板 */}
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            <WorkBoard
+              categoryItems={categoryItems}
+              timeColor={countdown < 60 ? '#ff4444' : '#333'}
+              selectedMakingItem={selectedMakingItem}
+              clickedMakingItems={clickedMakingItems}
+              onMakingItemSelect={handleMakingItemSelect}
+              selectedHoldItem={selectedHoldItem}
+              clickedHoldItems={clickedHoldItems}
+              onHoldItemSelect={handleHoldItemSelect}
+              hiddenMakingCards={hiddenMakingCards}
+              hiddenHoldCards={hiddenHoldCards}
+              onCardHeaderDoubleClick={handleCardHeaderDoubleClick}
+            />
+          </div>
         </div>
+
+        {/* Modal 組件 */}
+        {showPartialCancelModal && (
+          <SimplePartialCancelModal
+            opened={showPartialCancelModal}
+            onClose={() => setShowPartialCancelModal(false)}
+            selectedItem={selectedMakingItem || selectedHoldItem}
+            onConfirm={(quantity) => {
+              console.log('部分銷單確認:', quantity);
+              setShowPartialCancelModal(false);
+            }}
+          />
+        )}
+
+        {showSelectItemModal && (
+          <SelectItemModal
+            isOpen={showSelectItemModal}
+            onClose={() => setShowSelectItemModal(false)}
+          />
+        )}
       </div>
-
-      {/* Modal 組件 */}
-      {showPartialCancelModal && (
-        <PartialCancelModal
-          onClose={() => setShowPartialCancelModal(false)}
-          selectedItem={selectedMakingItem || selectedHoldItem}
-          onConfirm={(quantity) => {
-            console.log('部分銷單確認:', quantity);
-            setShowPartialCancelModal(false);
-          }}
-        />
-      )}
-
-      {showSelectItemModal && (
-        <SelectItemModal
-          onClose={() => setShowSelectItemModal(false)}
-          message="請先選擇要操作的品項"
-        />
-      )}
-    </div>
+    </GlobalContextProvider>
   );
 }
 

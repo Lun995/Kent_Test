@@ -13,15 +13,32 @@ interface UserAction {
     payload?: string;
 }
 
+// 新增 celltype 相關的類型定義
+interface DisplayState {
+    celltype: '3' | '4'; // 3列或4列
+}
+
+interface DisplayAction {
+    type: 'SET_CELLTYPE';
+    payload: '3' | '4';
+}
+
 interface GlobalContextType {
     userState: UserState;
     userDispatch: React.Dispatch<UserAction>;
+    displayState: DisplayState;
+    displayDispatch: React.Dispatch<DisplayAction>;
 }
 
 // 初始狀態
 const initialUserState: UserState = {
     username: '',
     isLoggedIn: false,
+};
+
+// 新增 displayState 初始狀態
+const initialDisplayState: DisplayState = {
+    celltype: '3', // 預設為3列
 };
 
 // 簡化的 userReducer
@@ -42,19 +59,37 @@ const userReducer = (state: UserState, action: UserAction): UserState => {
     }
 };
 
+// 新增 displayReducer
+const displayReducer = (state: DisplayState, action: DisplayAction): DisplayState => {
+    switch (action.type) {
+        case "SET_CELLTYPE":
+            return { 
+                ...state, 
+                celltype: action.payload 
+            };
+        default:
+            return state;
+    }
+};
+
 // 創建 Context
 export const GlobalContext = createContext<GlobalContextType>({
     userState: initialUserState,
     userDispatch: () => undefined,
+    displayState: initialDisplayState,
+    displayDispatch: () => undefined,
 });
 
 // Context Provider 組件
 export const GlobalContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [userState, userDispatch] = useReducer(userReducer, initialUserState);
+    const [displayState, displayDispatch] = useReducer(displayReducer, initialDisplayState);
 
     const contextValue: GlobalContextType = {
         userState,
         userDispatch,
+        displayState,
+        displayDispatch,
     };
 
     return (

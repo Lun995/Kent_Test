@@ -4,12 +4,20 @@ import {
   LeftSidebar, 
   StatusBar, 
   WorkBoard, 
-  PartialCancelModal, 
+  SimplePartialCancelModal, 
   SelectItemModal, 
   BackupScreen 
 } from '../../components/WorkstationBoard';
 import { HoldItemModal } from '../../components/WorkstationBoard/HoldItemModal';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { 
+  testCardData, 
+  convertTestCardDataToCategoryItems,
+  OrderItem, 
+  CategoryItems, 
+  CardData, 
+  CardStatus 
+} from '../../lib/test-card-data';
 
 import { mainPageStyles } from '../../styles/mainPageStyles';
 
@@ -83,30 +91,10 @@ export default function WorkstationBoard() {
   
   // 狀態管理
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [categoryItems, setCategoryItems] = useState<CategoryItems>({
-    making: [
-      { id: 'snow-beef-1', name: '雪花牛', count: 3, table: '內用A1', note: '油花少一點' },
-      { id: 'snow-beef-2', name: '雪花牛', count: 1, table: '內用A1', note: '雪花多一點雪花多一點雪花多一點很重要所以獎三遍' },
-      { id: 'premium-pork-making', name: '上選豬肉', count: 10, table: '內用A1' },
-    ],
-    hold: [],
-    waiting: [
-      { id: 'pork-fish-combo', name: '豬魚雙饗', count: 2, table: 'C2', note: '上選豬+魚片' },
-      { id: 'beef-combo', name: '絕代雙牛', count: 1, table: 'C2', note: '雪花牛+嫩煎牛' },
-      { id: 'snow-beef-c2', name: '雪花牛', count: 1, table: 'C2', note: '油花少一點' },
-      { id: 'premium-pork', name: '上選豬肉', count: 5, table: 'C3' },
-    ],
-  });
-  const [modalRows, setModalRows] = useState<OrderItem[]>([]);
-  // 部分銷單異動數量 state
-  const [holdEditCounts, setHoldEditCounts] = useState<number[]>([]);
-  
-  // 追蹤當前視窗是否為Hold品項
-  const [isHoldItemModal, setIsHoldItemModal] = useState<boolean>(false);
-  
-  // 全域變數：控制HOLD視窗是否顯示確認按鈕
-  // 0: 初始狀態，1: 製作中品項點擊狀態，2: 確認狀態
-  const [holdModalMode, setHoldModalMode] = useState<number>(0);
+  const [categoryItems, setCategoryItems] = useState<CategoryItems>(() => 
+    convertTestCardDataToCategoryItems(testCardData)
+  );
+
 
   // 製作中品項點擊特效狀態管理
   const [selectedMakingItem, setSelectedMakingItem] = useState<string | null>(null);
@@ -129,13 +117,13 @@ export default function WorkstationBoard() {
         return newSet;
       });
       setSelectedMakingItem(null);
-      setHoldModalMode(0);
+      // 清除選中狀態
       console.log('製作中品項已取消選中:', itemId);
     } else {
       // 如果沒有被點擊過，則選中（反灰）
       setClickedMakingItems(prev => new Set([...prev, itemId]));
       setSelectedMakingItem(itemId);
-      setHoldModalMode(1);
+      // 設置選中狀態
       console.log('製作中品項已選中:', itemId);
     }
     
@@ -214,12 +202,28 @@ export default function WorkstationBoard() {
         const newMaking = [...prev.making];
         const newWaiting = [...prev.waiting];
         
-        // 取出第一個待製作牌卡的所有品項
-        const firstTable = newWaiting[0]?.table;
-        if (firstTable) {
-          const itemsToMove = newWaiting.filter(item => item.table === firstTable);
+        // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
+        const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
+        let nextTableToMove = null;
+        
+        // 找到優先級最高的待製作牌卡
+        for (const priorityTable of priorityOrder) {
+          const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
+          if (hasPriorityTable) {
+            nextTableToMove = priorityTable;
+            break;
+          }
+        }
+        
+        // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
+        if (!nextTableToMove && newWaiting.length > 0) {
+          nextTableToMove = newWaiting[0]?.table;
+        }
+        
+        if (nextTableToMove) {
+          const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
           
-          console.log('準備移動品項：', { firstTable, itemsToMove });
+          console.log('準備移動品項：', { nextTableToMove, itemsToMove });
           
           // 移動品項到製作中
           const moveTimestamp = Date.now();
@@ -232,7 +236,7 @@ export default function WorkstationBoard() {
           });
           
           // 從待製作中移除
-          const remainingWaiting = newWaiting.filter(item => item.table !== firstTable);
+          const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
           newWaiting.length = 0;
           newWaiting.push(...remainingWaiting);
           
@@ -276,11 +280,27 @@ export default function WorkstationBoard() {
         const hiddenItems = newMaking.filter(item => item.table === hiddenTableName);
         
         if (hiddenItems.length > 0 && newWaiting.length > 0) {
-          // 從待製作中取出第一個牌卡的所有品項，一起移動到製作中
-          const firstTable = newWaiting[0]?.table;
-          if (firstTable) {
+          // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
+          const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
+          let nextTableToMove = null;
+          
+          // 找到優先級最高的待製作牌卡
+          for (const priorityTable of priorityOrder) {
+            const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
+            if (hasPriorityTable) {
+              nextTableToMove = priorityTable;
+              break;
+            }
+          }
+          
+          // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
+          if (!nextTableToMove && newWaiting.length > 0) {
+            nextTableToMove = newWaiting[0]?.table;
+          }
+          
+          if (nextTableToMove) {
             // 找到同一桌號的所有品項
-            const itemsToMove = newWaiting.filter(item => item.table === firstTable);
+            const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
             
             // 將這些品項一起移動到製作中，並確保它們保持在同一張牌卡中
             // 為所有移動的品項使用相同的時間戳，確保它們被分組到同一張牌卡
@@ -295,7 +315,7 @@ export default function WorkstationBoard() {
             });
             
             // 從待製作中移除這些品項
-            const remainingWaiting = newWaiting.filter(item => item.table !== firstTable);
+            const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
             newWaiting.length = 0; // 清空原陣列
             newWaiting.push(...remainingWaiting); // 重新填充
           }
@@ -316,10 +336,26 @@ export default function WorkstationBoard() {
             const newMaking = [...prev.making];
             const newWaiting = [...prev.waiting];
             
-            // 取出第一個待製作牌卡的所有品項
-            const firstTable = newWaiting[0]?.table;
-            if (firstTable) {
-              const itemsToMove = newWaiting.filter(item => item.table === firstTable);
+            // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
+            const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
+            let nextTableToMove = null;
+            
+            // 找到優先級最高的待製作牌卡
+            for (const priorityTable of priorityOrder) {
+              const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
+              if (hasPriorityTable) {
+                nextTableToMove = priorityTable;
+                break;
+              }
+            }
+            
+            // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
+            if (!nextTableToMove && newWaiting.length > 0) {
+              nextTableToMove = newWaiting[0]?.table;
+            }
+            
+            if (nextTableToMove) {
+              const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
               
               // 移動品項到製作中
               const moveTimestamp = Date.now();
@@ -332,7 +368,7 @@ export default function WorkstationBoard() {
               });
               
               // 從待製作中移除
-              const remainingWaiting = newWaiting.filter(item => item.table !== firstTable);
+              const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
               newWaiting.length = 0;
               newWaiting.push(...remainingWaiting);
               
@@ -383,10 +419,7 @@ export default function WorkstationBoard() {
         setShowHoldItemModal(true);
         // 初始化數量編輯狀態為0（讓用戶自己調整）
         setHoldItemEditCount(0);
-        // 如果全域變數為1，則設置為確認狀態（顯示確認按鈕）
-        if (holdModalMode === 1) {
-          setHoldModalMode(2);
-        }
+        // 設置為確認狀態（顯示確認按鈕）
         console.log('Hold Item Modal opened with making item:', makingItem);
       } else {
         console.log('No matching makingItem found');
@@ -420,8 +453,8 @@ export default function WorkstationBoard() {
 
   // 倒數計時 state
   const [countdown, setCountdown] = useState(300); // 300秒倒數
-  const [currentItem, setCurrentItem] = useState(2); // 當前項目
-  const [totalItems, setTotalItems] = useState(20); // 總項目數
+     const [currentItem, setCurrentItem] = useState(1); // 當前項目
+   const [totalItems, setTotalItems] = useState(0); // 總項目數，將根據實際資料動態計算
   const [timeColor, setTimeColor] = useState('#009944'); // 製作中排卡顏色狀態
   const [startTime, setStartTime] = useState(() => Date.now()); // 頁面載入時間
   
@@ -480,17 +513,23 @@ export default function WorkstationBoard() {
     fetchWorkstations(storeId);
   }, []);
 
-  // 監聽製作中品項變化，當沒有品項時自動觸發遞補
-  useEffect(() => {
-    // 如果製作中沒有品項，且有待製作品項，則自動觸發遞補
-    if (categoryItems.making.length === 0 && categoryItems.waiting.length > 0) {
-      console.log('檢測到製作中沒有品項，自動觸發遞補');
-      // 延遲執行，確保狀態更新完成
-      setTimeout(() => {
-        forceAutoReplenish();
-      }, 100);
-    }
-  }, [categoryItems.making.length, categoryItems.waiting.length]);
+     // 監聽製作中品項變化，當沒有品項時自動觸發遞補
+   useEffect(() => {
+     // 如果製作中沒有品項，且有待製作品項，則自動觸發遞補
+     if (categoryItems.making.length === 0 && categoryItems.waiting.length > 0) {
+       console.log('檢測到製作中沒有品項，自動觸發遞補');
+       // 延遲執行，確保狀態更新完成
+       setTimeout(() => {
+         forceAutoReplenish();
+       }, 100);
+     }
+   }, [categoryItems.making.length, categoryItems.waiting.length]);
+
+   // 動態計算總項目數
+   useEffect(() => {
+     const total = categoryItems.making.length + categoryItems.hold.length + categoryItems.waiting.length;
+     setTotalItems(total);
+   }, [categoryItems.making.length, categoryItems.hold.length, categoryItems.waiting.length]);
 
   // 添加動畫樣式和品項選中樣式
   useEffect(() => {
@@ -605,8 +644,11 @@ export default function WorkstationBoard() {
 
   // 事件處理器
   const handlePartialCancel = () => {
-    // 暫時顯示選擇品項提示
-    setShowSelectItemModal(true);
+    if (!selectedMakingItem && !selectedHoldItem) {
+      setShowSelectItemModal(true);
+      return;
+    }
+    setShowModal(true);
   };
 
   const handleHistoryRecord = () => {
@@ -629,9 +671,7 @@ export default function WorkstationBoard() {
 
 
 
-  const handleHoldEditCountChange = (index: number, value: number) => {
-    setHoldEditCounts(prev => prev.map((v, i) => i === index ? value : v));
-  };
+  // 這個函數已經不再需要，因為我們簡化了部分銷單邏輯
 
   // HOLD視窗數量編輯處理函數
   const handleHoldItemCountChange = (newCount: number) => {
@@ -642,7 +682,7 @@ export default function WorkstationBoard() {
 
   // HOLD視窗確認處理函數
   const handleHoldItemConfirm = () => {
-    if (selectedHoldItemData && holdModalMode === 2) {
+    if (selectedHoldItemData) {
       console.log('HOLD confirmed for item:', selectedHoldItemData, 'with count:', holdItemEditCount);
       
       // 計算要扣除的數量（原始數量 - 異動後的數量）
@@ -704,7 +744,7 @@ export default function WorkstationBoard() {
       
       // 關閉視窗並重置狀態
       setShowHoldItemModal(false);
-      setHoldModalMode(0);
+      // 重置狀態
       setHoldItemEditCount(0);
       
       // 清除選中狀態
@@ -718,55 +758,37 @@ export default function WorkstationBoard() {
     }
   };
 
-  // 部分銷單 Hold 處理
-  const handleHold = () => {
-    // 1. 更新 making: 扣除異動數量
-    const newMaking = [...categoryItems.making];
-    const newHold = [...categoryItems.hold];
-    
-    modalRows.forEach((row, idx) => {
-      const minus = holdEditCounts[idx] || 0;
-      
-      if (minus > 0) {
-        // making 扣除 - 根據 name, table 和 note 來精確匹配
-        const makingIdx = newMaking.findIndex(m => 
-          m.name === row.name && 
-          m.table === row.table && 
-          m.note === row.note
-        );
-        
-        if (makingIdx !== -1) {
-          const originalCount = newMaking[makingIdx].count;
-          newMaking[makingIdx] = { ...newMaking[makingIdx], count: Math.max(0, originalCount - minus) };
-        }
-        
-        // Hold 累加或新增 - 同樣根據 name, table 和 note 來精確匹配
-        const holdIdx = newHold.findIndex(h => 
-          h.name === row.name && 
-          h.table === row.table && 
-          h.note === row.note
-        );
-        if (holdIdx !== -1) {
-          newHold[holdIdx] = { ...newHold[holdIdx], count: newHold[holdIdx].count + minus };
-        } else {
-          newHold.push({ id: row.id, name: row.name, table: row.table, count: minus, note: row.note });
-        }
-      }
-    });
-    
-    // 過濾 making 為 0 的品項
-    const filteredMaking = newMaking.filter(m => m.count > 0);
-    
-    setCategoryItems(prev => ({ ...prev, making: filteredMaking, hold: newHold }));
-    setShowModal(false);
-    
-    // 清理選中狀態，因為品項可能已經被移動或數量變更
-    setSelectedMakingItem(null);
-    setSelectedHoldItem(null);
-    setClickedMakingItems(new Set());
-    setClickedHoldItems(new Set());
-    
+  // 部分銷單 Hold 處理函數已經簡化，不再需要複雜的邏輯
 
+  // 計算待製作牌卡數量（以牌卡計算非品項）
+  const getUniqueWaitingTables = () => {
+    const uniqueTables = new Set();
+    categoryItems.waiting.forEach(item => {
+      uniqueTables.add(item.table);
+    });
+    return Array.from(uniqueTables);
+  };
+
+  // 計算逾時批次數量
+  const getOverdueBatches = () => {
+    // 檢查製作中是否有逾時的品項（超過10秒）
+    const currentTime = Date.now();
+    const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+    
+    if (elapsedSeconds >= 10) {
+      // 只計算可見的製作中牌卡（未隱藏的）
+      const overdueTables = new Set();
+      categoryItems.making.forEach(item => {
+        const cardKey = `making-${item.table}`;
+        // 只計算未隱藏的牌卡
+        if (!hiddenMakingCards.has(cardKey)) {
+          overdueTables.add(item.table);
+        }
+      });
+      return overdueTables.size;
+    }
+    
+    return 0;
   };
 
   return (
@@ -792,11 +814,11 @@ export default function WorkstationBoard() {
 
       {/* 右側主內容 */}
       <div style={styles.rightContent}>
-        {/* 頂部狀態欄 */}
-        <StatusBar
-          pendingBatches={15}
-          overdueBatches={3}
-        />
+                 {/* 頂部狀態欄 */}
+         <StatusBar
+           pendingBatches={getUniqueWaitingTables().length}
+           overdueBatches={getOverdueBatches()}
+         />
         
         {/* 工作看板 */}
         <WorkBoard 
@@ -816,14 +838,14 @@ export default function WorkstationBoard() {
       </div>
 
       {/* Modal 組件 */}
-      <PartialCancelModal
-        isOpen={showModal}
-        modalRows={modalRows}
-        holdEditCounts={holdEditCounts}
-        onHoldEditCountChange={handleHoldEditCountChange}
-        onHold={handleHold}
+      <SimplePartialCancelModal
+        opened={showModal}
         onClose={() => setShowModal(false)}
-        isHoldItem={isHoldItemModal}
+        selectedItem={selectedMakingItem || selectedHoldItem}
+        onConfirm={(quantity) => {
+          console.log('部分銷單確認:', quantity);
+          setShowModal(false);
+        }}
       />
 
       <SelectItemModal
@@ -836,17 +858,17 @@ export default function WorkstationBoard() {
         selectedItem={selectedHoldItemData}
         onClose={() => setShowHoldItemModal(false)}
         itemType={selectedHoldItemData?.id && categoryItems.making.find(item => item.id === selectedHoldItemData.id) ? 'making' : 'hold'}
-        showConfirmButton={holdModalMode === 2}
+        showConfirmButton={true}
         editCount={holdItemEditCount}
         onCountChange={handleHoldItemCountChange}
         onConfirm={handleHoldItemConfirm}
       />
 
-      <BackupScreen
-        isVisible={showBackupScreen}
-        onClose={() => setShowBackupScreen(false)}
-        totalCount={25}
-      />
+             <BackupScreen
+         isVisible={showBackupScreen}
+         onClose={() => setShowBackupScreen(false)}
+         totalCount={categoryItems.making.length + categoryItems.hold.length + categoryItems.waiting.length}
+       />
       
 
     </div>
