@@ -78,7 +78,7 @@ export const cellTypeSettingModalStyles = ({ isMobile, isTablet }: CellTypeSetti
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    position: 'relative',
+    position: 'relative' as const,
     overflow: 'hidden',
   },
   
@@ -151,7 +151,7 @@ export const cellTypeSettingModalStyles = ({ isMobile, isTablet }: CellTypeSetti
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     textAlign: 'left' as const,
-    position: 'relative',
+    position: 'relative' as const,
     overflow: 'hidden',
   },
   
@@ -170,7 +170,7 @@ export const cellTypeSettingModalStyles = ({ isMobile, isTablet }: CellTypeSetti
   
   buttonText: {
     flex: 1,
-    textAlign: 'left',
+    textAlign: 'left' as const,
     textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
   },
   
