@@ -1,6 +1,8 @@
 "use client";
 import { useEffect } from 'react';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useGlobalContext } from '../../context/GlobalContext';
+import { truncateNoteText } from '../../lib/textUtils';
 import { workBoardStyles } from '../../styles/workBoardStyles';
 
 interface OrderItem {
@@ -45,7 +47,90 @@ export function WorkBoard({
   onCardHeaderDoubleClick
 }: WorkBoardProps) {
   const { isMobile, isTablet } = useIsMobile();
+  const { displayState } = useGlobalContext();
   const styles = workBoardStyles({ isMobile, isTablet });
+
+  // 根據 celltype 決定顯示的列數
+  const shouldShowThirdRow = displayState.celltype === '4';
+  
+  // 計算可用的欄位數量（包含動態的 HOLD 欄位）
+  const getAvailableColumns = () => {
+    const hasHoldColumn = categoryItems.hold.length > 0 && !hiddenHoldCards.has('hold-main');
+    const maxColumns = displayState.celltype === '3' ? 3 : 4;
+    
+    // 計算待製作欄位可以使用的數量
+    let availableWaitingColumns = maxColumns - 1; // 減去製作中欄位
+    
+    if (hasHoldColumn) {
+      availableWaitingColumns -= 1; // 如果有 HOLD 欄位，再減去 1
+    }
+    
+    return {
+      maxColumns,
+      hasHoldColumn,
+      availableWaitingColumns: Math.max(0, availableWaitingColumns)
+    };
+  };
+  
+  const { maxColumns, hasHoldColumn, availableWaitingColumns } = getAvailableColumns();
+  
+  // 檢查製作中狀態，用於遞補邏輯
+  const hasC1InMaking = categoryItems.making.some(item => item.table === 'C1');
+  const hasC2InMaking = categoryItems.making.some(item => item.table === 'C2');
+  const hasC3InMaking = categoryItems.making.some(item => item.table === 'C3');
+  
+  // 計算遞補後的牌卡分配
+  const getCardDistribution = () => {
+    const distribution = {
+      firstRow: [] as string[], // 第一列顯示的桌號
+      secondRow: [] as string[], // 第二列顯示的桌號
+      thirdRow: [] as string[]  // 第三列顯示的桌號
+    };
+    
+    // 獲取所有待製作的桌號
+    const waitingTables = Object.keys(groupItemsByTable(categoryItems.waiting));
+    
+    // 根據製作中狀態分配牌卡 - 實現正確的遞補邏輯
+    if (!hasC1InMaking && waitingTables.includes('C1')) {
+      distribution.firstRow.push('C1');
+    }
+    
+    if (!hasC2InMaking && waitingTables.includes('C2')) {
+      distribution.firstRow.push('C2');
+    }
+    
+    // #3 牌卡的分配邏輯 - 實現正確的遞補邏輯
+    if (!hasC3InMaking && waitingTables.includes('C3')) {
+      if (!hasC2InMaking) {
+        // 如果#2不在製作中，則#3遞補到第一列（原本#2的位置）
+        distribution.firstRow.push('C3');
+      } else {
+        // 如果#2在製作中，則#3顯示在第二列
+        distribution.secondRow.push('C3');
+      }
+    }
+    
+    // 其他桌號根據可用欄位數量分配到第二列或第三列
+    const otherTables = waitingTables.filter(table => 
+      !['C1', 'C2', 'C3'].includes(table) && 
+      !distribution.firstRow.includes(table) &&
+      !distribution.secondRow.includes(table)
+    );
+    
+    if (availableWaitingColumns >= 2) {
+      // 第二列顯示其他桌號
+      distribution.secondRow.push(...otherTables);
+    }
+    
+    if (availableWaitingColumns >= 3) {
+      // 第三列顯示更多其他桌號（如果有足夠空間）
+      // 這裡可以根據需要進一步分配
+    }
+    
+    return distribution;
+  };
+  
+  const cardDistribution = getCardDistribution();
 
   // 監聽製作中牌卡狀態，當沒有可見牌卡時觸發遞補
   useEffect(() => {
@@ -68,6 +153,44 @@ export function WorkBoard({
     if (hasC2InMaking) {
       console.log('檢測到#2牌卡進入製作中狀態，觸發#3牌卡遞補邏輯');
       // 這裡可以觸發#3牌卡遞補到前一列的邏輯
+    }
+  }, [categoryItems.making, categoryItems.waiting, hiddenMakingCards]);
+
+  // 自動遞補邏輯：當製作中沒有牌卡時，自動將待製作的第一張牌卡遞補到製作中
+  useEffect(() => {
+    // 檢查製作中是否有可見的牌卡
+    const visibleMakingCards = Object.keys(groupItemsByTable(categoryItems.making)).filter(tableName => {
+      const cardKey = `making-${tableName}`;
+      return !hiddenMakingCards.has(cardKey);
+    });
+    
+    // 如果製作中沒有可見牌卡，且有待製作品項，則自動遞補
+    if (visibleMakingCards.length === 0 && categoryItems.waiting.length > 0) {
+      console.log('檢測到製作中沒有可見牌卡，自動遞補待製作的第一張牌卡');
+      
+      // 獲取待製作牌卡的優先順序
+      const waitingTables = Object.keys(groupItemsByTable(categoryItems.waiting));
+      
+      // 優先遞補順序：C1 > C2 > C3 > 其他桌號
+      let nextTableToMove = null;
+      
+      if (waitingTables.includes('C1')) {
+        nextTableToMove = 'C1';
+      } else if (waitingTables.includes('C2')) {
+        nextTableToMove = 'C2';
+      } else if (waitingTables.includes('C3')) {
+        nextTableToMove = 'C3';
+      } else if (waitingTables.length > 0) {
+        // 如果沒有 C1, C2, C3，則選擇第一個桌號
+        nextTableToMove = waitingTables[0];
+      }
+      
+      if (nextTableToMove) {
+        console.log(`自動遞補 ${nextTableToMove} 到製作中`);
+        // 這裡可以觸發遞補邏輯，或者通知父組件
+        // 由於我們無法直接修改 categoryItems，這裡只是記錄日誌
+        // 實際的遞補邏輯需要在父組件中實現
+      }
     }
   }, [categoryItems.making, categoryItems.waiting, hiddenMakingCards]);
 
@@ -191,62 +314,62 @@ export function WorkBoard({
                             height: '100px', // 統一高度
                           }}
                         >
-                          <div style={{ 
-                            display: 'flex', 
-                            width: '100%', 
-                            flexDirection: 'column',
-                            gap: '4px',
-                            justifyContent: makingItem.note ? 'flex-start' : 'center', // 有備註時靠上，無備註時置中
-                            height: '100%'
-                          }}>
-                            {/* 品項名稱與備註行 */}
-                            <div style={{ 
-                              display: 'flex', 
-                              width: '100%', 
-                              alignItems: 'flex-start',
-                              gap: '8px'
-                            }}>
-                              <div style={{ 
-                                flex: '0 0 70%', 
-                                textAlign: 'left',
-                                minWidth: 0,
-                                overflow: 'visible',
-                                paddingLeft: '25px'
-                              }}>
-                                <span style={styles.itemName}>
-                                  {makingItem.name}
-                                </span>
-                                {/* 品項備註行 */}
-                                {makingItem.note && (
-                                  <div style={{ 
-                                    marginTop: '2px'
-                                  }}>
-                                    <span style={{ 
-                                      ...styles.itemNote, 
-                                      fontSize: '1.1em', 
-                                      color: '#666',
-                                      textAlign: 'left',
-                                      lineHeight: '1.2',
-                                      maxWidth: '100%',
-                                      wordWrap: 'break-word',
-                                      overflowWrap: 'break-word'
-                                    }}>
-                                      {makingItem.note}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              {/* 數量標籤 - 跨欄垂直置中 */}
-                              <div style={{ 
-                                flex: '0 0 30%', 
-                                textAlign: 'center',
-                                minWidth: 0,
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                paddingRight: '50px',
-                                alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
-                              }}>
+                                                     <div style={{ 
+                             display: 'flex', 
+                             width: '100%', 
+                             flexDirection: 'column',
+                             gap: '4px',
+                             justifyContent: makingItem.note ? 'flex-start' : 'center', // 有備註時靠上，無備註時置中
+                             height: '100%'
+                           }}>
+                             {/* 品項名稱與備註行 */}
+                             <div style={{ 
+                               display: 'flex', 
+                               width: '100%', 
+                               alignItems: 'flex-start',
+                               gap: '8px'
+                             }}>
+                               <div style={{ 
+                                 flex: '0 0 70%', 
+                                 textAlign: 'left',
+                                 minWidth: 0,
+                                 overflow: 'visible',
+                                 paddingLeft: '25px'
+                               }}>
+                                 <span style={styles.itemName}>
+                                   {makingItem.name}
+                                 </span>
+                                 {/* 品項備註行 - 應用文字規則 */}
+                                 {makingItem.note && (
+                                   <div style={{ 
+                                     marginTop: '2px'
+                                   }}>
+                                     <span style={{ 
+                                       ...styles.itemNote, 
+                                       fontSize: '1.1em', 
+                                       color: '#666',
+                                       textAlign: 'left',
+                                       lineHeight: '1.2',
+                                       maxWidth: '100%',
+                                       wordWrap: 'break-word',
+                                       overflowWrap: 'break-word'
+                                     }}>
+                                       {truncateNoteText(makingItem.note)}
+                                     </span>
+                                   </div>
+                                 )}
+                               </div>
+                               {/* 數量標籤 - 跨欄垂直置中 */}
+                               <div style={{ 
+                                 flex: '0 0 30%', 
+                                 textAlign: 'center',
+                                 minWidth: 0,
+                                 display: 'flex',
+                                 justifyContent: 'center',
+                                 alignItems: 'center',
+                                 paddingRight: '70px',
+                                 alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
+                               }}>
                                 <span style={{
                                   ...styles.itemBadge,
                                   display: 'inline-block',
@@ -359,7 +482,7 @@ export function WorkBoard({
                                 <span style={styles.itemName}>
                                   {item.name}
                                 </span>
-                                {/* 品項備註行 */}
+                                {/* 品項備註行 - 應用文字規則 */}
                                 {item.note && (
                                   <div style={{ 
                                     marginTop: '2px'
@@ -374,7 +497,7 @@ export function WorkBoard({
                                       wordWrap: 'break-word',
                                       overflowWrap: 'break-word'
                                     }}>
-                                      {item.note}
+                                      {truncateNoteText(item.note)}
                                     </span>
                                   </div>
                                 )}
@@ -387,7 +510,7 @@ export function WorkBoard({
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                paddingRight: '50px',
+                                paddingRight: '70px',
                                 alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                               }}>
                                 <span style={{
@@ -416,187 +539,156 @@ export function WorkBoard({
               </td>
             )}
 
-                        {/* 待製作欄位 - 第一列 (#1, #2) */}
-            <td style={styles.tableCell}>
-              <div style={styles.columnHeader}>待製作</div>
-              {Object.entries(groupItemsByTable(categoryItems.waiting))
-                .filter(([tableName, items]) => {
-                  // 檢查是否有#2牌卡（C2桌）的品項在製作中
-                  const hasC2InMaking = categoryItems.making.some(item => item.table === 'C2');
-                  
-                  // 如果#2牌卡在製作中，則#3牌卡遞補到第一列
-                  if (hasC2InMaking && tableName === 'C3') {
-                    return true; // #3牌卡遞補到第一列
-                  }
-                  
-                  // 只顯示 #1 和 #2 的牌卡
-                  let cardNumber;
-                  if (tableName === 'C1') {
-                    cardNumber = 1;
-                  } else if (tableName === 'C2') {
-                    cardNumber = 2;
-                  } else {
-                    cardNumber = 0; // 其他桌號不顯示在第一列
-                  }
-                  return cardNumber === 1 || cardNumber === 2;
-                })
-                .map(([tableName, items], idx) => {
-                  // 待製作牌卡使用固定的編號
-                  let cardNumber;
-                  if (tableName === 'C1') {
-                    cardNumber = 1;
-                  } else if (tableName === 'C2') {
-                    cardNumber = 2;
-                  } else if (tableName === 'C3') {
-                    cardNumber = 3; // #3牌卡遞補後仍然維持#3編號
-                  } else {
-                    cardNumber = idx + 1;
-                  }
-                  
-                  return (
-                    <div
-                      key={tableName}
-                      style={{
-                        ...styles.orderCard,
-                        border: '2px solid #222',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        opacity: 0.5,
-                        cursor: 'not-allowed',
-                      }}
-                    >
-                      <div style={{
-                        ...styles.cardHeader,
-                        background: '#009944',
-                      }}>
-                        #{cardNumber}
-                      </div>
-                      <div style={styles.cardContent}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-                          {items.map((item, itemIdx) => (
-                            <div
-                              key={`${item.table}-${item.note || 'no-note'}`}
-                              style={{
-                                border: '2px solid #ddd',
-                                borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
-                                width: '100%',
-                                boxSizing: 'border-box',
-                                padding: '12px',
-                                borderRadius: '4px',
-                                marginBottom: '8px',
-                                backgroundColor: '#fff',
-                                height: '100px', // 統一高度
-                              }}
-                            >
-                              <div style={{ 
-                                display: 'flex', 
-                                width: '100%', 
-                                flexDirection: 'column',
-                                gap: '4px',
-                                justifyContent: item.note ? 'flex-start' : 'center', // 有備註時置中
-                                height: '100%'
-                              }}>
-                                {/* 品項名稱與備註行 */}
-                                <div style={{ 
-                                  display: 'flex', 
-                                  width: '100%', 
-                                  alignItems: 'flex-start',
-                                  gap: '8px'
-                                }}>
-                                  <div style={{ 
-                                    flex: '0 0 70%', 
-                                    textAlign: 'left',
-                                    minWidth: 0,
-                                    overflow: 'visible',
-                                    paddingLeft: '25px'
-                                  }}>
-                                    <span style={styles.itemName}>
-                                      {item.name}
-                                    </span>
-                                    {/* 品項備註行 */}
-                                    {item.note && (
-                                      <div style={{ 
-                                        marginTop: '2px'
-                                      }}>
-                                        <span style={{ 
-                                          ...styles.itemNote, 
-                                          fontSize: '1.1em', 
-                                          color: '#666',
-                                          textAlign: 'left',
-                                          lineHeight: '1.2',
-                                          maxWidth: '100%',
-                                          wordWrap: 'break-word',
-                                          overflowWrap: 'break-word'
-                                        }}>
-                                          {item.note}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  {/* 數量標籤 - 跨欄垂直置中 */}
-                                  <div style={{ 
-                                    flex: '0 0 30%', 
-                                    textAlign: 'center',
-                                    minWidth: 0,
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    paddingRight: '50px',
-                                    alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
-                                  }}>
-                                    <span style={{
-                                      ...styles.itemBadge,
-                                      display: 'inline-block',
-                                      padding: '6px 10px',
-                                      backgroundColor: '#6c757d',
-                                      color: 'white',
-                                      borderRadius: '4px',
-                                      fontSize: '1.4rem',
-                                      fontWeight: '600',
-                                      width: '25px',
-                                      textAlign: 'center'
-                                    }}>
-                                      {item.count}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-            </td>
-
-            {/* 待製作欄位 - 第二列 (當沒有Hold時顯示更多待製作) */}
-            {categoryItems.hold.length === 0 || hiddenHoldCards.has('hold-main') ? (
-              // 沒有Hold欄位時，顯示更多待製作牌卡
+                        {/* 待製作欄位 - 第一列 (根據可用欄位數量動態調整) */}
+            {availableWaitingColumns > 0 && (
               <td style={styles.tableCell}>
                 <div style={styles.columnHeader}>待製作</div>
-                {Object.entries(groupItemsByTable(categoryItems.waiting))
-                  .filter(([tableName, items], idx) => {
-                    // 檢查是否有#2牌卡（C2桌）的品項在製作中
-                    const hasC2InMaking = categoryItems.making.some(item => item.table === 'C2');
-                    
-                    // 如果#2牌卡在製作中，則#3牌卡不顯示在第二列（因為已經遞補到第一列）
-                    if (hasC2InMaking && tableName === 'C3') {
-                      return false; // #3牌卡不顯示在第二列
-                    }
-                    
-                    // 顯示 #3 和其他待製作牌卡
+                                 {Object.entries(groupItemsByTable(categoryItems.waiting))
+                   .filter(([tableName, items], idx) => {
+                     // 只顯示分配給第一列的桌號
+                     return cardDistribution.firstRow.includes(tableName);
+                   })
+                  .map(([tableName, items], idx) => {
+                    // 待製作牌卡使用固定的編號
                     let cardNumber;
                     if (tableName === 'C1') {
                       cardNumber = 1;
                     } else if (tableName === 'C2') {
                       cardNumber = 2;
                     } else if (tableName === 'C3') {
-                      cardNumber = 3;
+                      cardNumber = 3; // #3牌卡遞補後仍然維持#3編號
                     } else {
-                      cardNumber = idx + 4; // 其他桌號從#4開始編號
+                      cardNumber = idx + 1;
                     }
-                    return cardNumber >= 3; // 只顯示#3及以上的牌卡
-                  })
+                    
+                    return (
+                      <div
+                        key={tableName}
+                        style={{
+                          ...styles.orderCard,
+                          border: '2px solid #222',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          opacity: 0.5,
+                          cursor: 'not-allowed',
+                        }}
+                      >
+                        <div style={{
+                          ...styles.cardHeader,
+                          background: '#009944',
+                        }}>
+                          #{cardNumber}
+                        </div>
+                        <div style={styles.cardContent}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                            {items.map((item, itemIdx) => (
+                              <div
+                                key={`${item.table}-${item.note || 'no-note'}`}
+                                style={{
+                                  border: '2px solid #ddd',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                                  width: '100%',
+                                  boxSizing: 'border-box',
+                                  padding: '12px',
+                                  borderRadius: '4px',
+                                  marginBottom: '8px',
+                                  backgroundColor: '#fff',
+                                  height: '100px', // 統一高度
+                                }}
+                              >
+                                <div style={{ 
+                                  display: 'flex', 
+                                  width: '100%', 
+                                  flexDirection: 'column',
+                                  gap: '4px',
+                                  justifyContent: item.note ? 'flex-start' : 'center', // 有備註時置中
+                                  height: '100%'
+                                }}>
+                                  {/* 品項名稱與備註行 */}
+                                  <div style={{ 
+                                    display: 'flex', 
+                                    width: '100%', 
+                                    alignItems: 'flex-start',
+                                    gap: '8px'
+                                  }}>
+                                    <div style={{ 
+                                      flex: '0 0 70%', 
+                                      textAlign: 'left',
+                                      minWidth: 0,
+                                      overflow: 'visible',
+                                      paddingLeft: '25px'
+                                    }}>
+                                      <span style={styles.itemName}>
+                                        {item.name}
+                                      </span>
+                                      {/* 品項備註行 - 應用文字規則 */}
+                                      {item.note && (
+                                        <div style={{ 
+                                          marginTop: '2px'
+                                        }}>
+                                          <span style={{ 
+                                            ...styles.itemNote, 
+                                            fontSize: '1.1em', 
+                                            color: '#666',
+                                            textAlign: 'left',
+                                            lineHeight: '1.2',
+                                            maxWidth: '100%',
+                                            wordWrap: 'break-word',
+                                            overflowWrap: 'break-word'
+                                          }}>
+                                            {truncateNoteText(item.note)}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    {/* 數量標籤 - 跨欄垂直置中 */}
+                                    <div style={{ 
+                                      flex: '0 0 30%', 
+                                      textAlign: 'center',
+                                      minWidth: 0,
+                                      display: 'flex',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      paddingRight: '70px',
+                                      alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
+                                    }}>
+                                      <span style={{
+                                        ...styles.itemBadge,
+                                        display: 'inline-block',
+                                        padding: '6px 10px',
+                                        backgroundColor: '#6c757d',
+                                        color: 'white',
+                                        borderRadius: '4px',
+                                        fontSize: '1.4rem',
+                                        fontWeight: '600',
+                                        width: '25px',
+                                        textAlign: 'center'
+                                      }}>
+                                        {item.count}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </td>
+            )}
+
+
+
+                                      {/* 待製作欄位 - 第二列 (根據可用欄位數量動態調整) */}
+            {availableWaitingColumns >= 2 && (
+              <td style={styles.tableCell}>
+                <div style={styles.columnHeader}>待製作</div>
+                                 {Object.entries(groupItemsByTable(categoryItems.waiting))
+                   .filter(([tableName, items], idx) => {
+                     // 只顯示分配給第二列的桌號
+                     return cardDistribution.secondRow.includes(tableName);
+                   })
                   .map(([tableName, items], idx) => {
                     // 計算實際的牌卡編號
                     let cardNumber;
@@ -669,7 +761,7 @@ export function WorkBoard({
                                       <span style={styles.itemName}>
                                         {item.name}
                                       </span>
-                                      {/* 品項備註行 */}
+                                      {/* 品項備註行 - 應用文字規則 */}
                                       {item.note && (
                                         <div style={{ 
                                           marginTop: '2px'
@@ -684,7 +776,7 @@ export function WorkBoard({
                                             wordWrap: 'break-word',
                                             overflowWrap: 'break-word'
                                           }}>
-                                            {item.note}
+                                            {truncateNoteText(item.note)}
                                           </span>
                                         </div>
                                       )}
@@ -697,7 +789,7 @@ export function WorkBoard({
                                       display: 'flex',
                                       justifyContent: 'center',
                                       alignItems: 'center',
-                                      paddingRight: '50px',
+                                      paddingRight: '70px',
                                       alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                     }}>
                                       <span style={{
@@ -725,8 +817,149 @@ export function WorkBoard({
                     );
                   })}
               </td>
-            ) : null}
+            )}
+
+            {/* 第三列待製作欄位 - 根據可用欄位數量動態調整，放在最右邊 */}
+            {availableWaitingColumns >= 3 && (
+              <td style={styles.tableCell}>
+                <div style={styles.columnHeader}>待製作</div>
+                                 {Object.entries(groupItemsByTable(categoryItems.waiting))
+                   .filter(([tableName, items], idx) => {
+                     // 只顯示分配給第三列的桌號
+                     return cardDistribution.thirdRow.includes(tableName);
+                   })
+                  .map(([tableName, items], idx) => {
+                    // 計算實際的牌卡編號
+                    let cardNumber;
+                    if (tableName === 'C1') {
+                      cardNumber = 1;
+                    } else if (tableName === 'C2') {
+                      cardNumber = 2;
+                    } else if (tableName === 'C3') {
+                      cardNumber = 3;
+                    } else {
+                      cardNumber = idx + 4;
+                    }
+                    
+                    return (
+                      <div
+                        key={`third-${tableName}`}
+                        style={{
+                          ...styles.orderCard,
+                          border: '2px solid #222',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          opacity: 0.5,
+                          cursor: 'not-allowed',
+                        }}
+                      >
+                        <div style={{
+                          ...styles.cardHeader,
+                          background: '#009944',
+                        }}>
+                          #{cardNumber}
+                        </div>
+                        <div style={styles.cardContent}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                            {items.map((item, itemIdx) => (
+                              <div
+                                key={`third-${item.table}-${item.note || 'no-note'}`}
+                                style={{
+                                  border: '2px solid #ddd',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                                  width: '100%',
+                                  boxSizing: 'border-box',
+                                  padding: '12px',
+                                  borderRadius: '4px',
+                                  marginBottom: '8px',
+                                  backgroundColor: '#fff',
+                                  height: '100px', // 統一高度
+                                }}
+                              >
+                                <div style={{ 
+                                  display: 'flex', 
+                                  width: '100%', 
+                                  flexDirection: 'column',
+                                  gap: '4px',
+                                  justifyContent: item.note ? 'flex-start' : 'center',
+                                  height: '100%'
+                                }}>
+                                  {/* 品項名稱與備註行 */}
+                                  <div style={{ 
+                                    display: 'flex', 
+                                    width: '100%', 
+                                    alignItems: 'flex-start',
+                                    gap: '8px'
+                                  }}>
+                                    <div style={{ 
+                                      flex: '0 0 70%', 
+                                      textAlign: 'left',
+                                      minWidth: 0,
+                                      overflow: 'visible',
+                                      paddingLeft: '25px'
+                                    }}>
+                                      <span style={styles.itemName}>
+                                        {item.name}
+                                      </span>
+                                      {/* 品項備註行 - 應用文字規則 */}
+                                      {item.note && (
+                                        <div style={{ 
+                                          marginTop: '2px'
+                                        }}>
+                                          <span style={{ 
+                                            ...styles.itemNote, 
+                                            fontSize: '1.1em', 
+                                            color: '#666',
+                                            textAlign: 'left',
+                                            lineHeight: '1.2',
+                                            maxWidth: '100%',
+                                            wordWrap: 'break-word',
+                                            overflowWrap: 'break-word'
+                                          }}>
+                                            {truncateNoteText(item.note)}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    {/* 數量標籤 - 跨欄垂直置中 */}
+                                    <div style={{ 
+                                      flex: '0 0 30%', 
+                                      textAlign: 'center',
+                                      minWidth: 0,
+                                      display: 'flex',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      paddingRight: '70px',
+                                      alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
+                                    }}>
+                                      <span style={{
+                                        ...styles.itemBadge,
+                                        display: 'inline-block',
+                                        padding: '6px 10px',
+                                        backgroundColor: '#6c757d',
+                                        color: 'white',
+                                        borderRadius: '4px',
+                                        fontSize: '1.4rem',
+                                        fontWeight: '600',
+                                        width: '25px',
+                                        textAlign: 'center'
+                                      }}>
+                                        {item.count}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </td>
+            )}
           </tr>
+
+
         </tbody>
       </table>
     </div>

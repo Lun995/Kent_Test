@@ -1,7 +1,7 @@
 export { LeftSidebar } from './LeftSidebar';
 export { StatusBar } from './StatusBar';
 export { WorkBoard } from './WorkBoard';
-export { PartialCancelModal } from './PartialCancelModal';
+export { SimplePartialCancelModal } from './SimplePartialCancelModal';
 export { SelectItemModal } from './SelectItemModal';
 export { BackupScreen } from './BackupScreen';
 export { Clock } from './Clock';

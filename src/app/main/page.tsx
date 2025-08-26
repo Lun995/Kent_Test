@@ -4,7 +4,7 @@ import {
   LeftSidebar, 
   StatusBar, 
   WorkBoard, 
-  PartialCancelModal, 
+  SimplePartialCancelModal, 
   SelectItemModal, 
   BackupScreen 
 } from '../../components/WorkstationBoard';
@@ -97,16 +97,7 @@ export default function WorkstationBoard() {
       { id: 'premium-pork', name: '上選豬肉', count: 5, table: 'C3' },
     ],
   });
-  const [modalRows, setModalRows] = useState<OrderItem[]>([]);
-  // 部分銷單異動數量 state
-  const [holdEditCounts, setHoldEditCounts] = useState<number[]>([]);
-  
-  // 追蹤當前視窗是否為Hold品項
-  const [isHoldItemModal, setIsHoldItemModal] = useState<boolean>(false);
-  
-  // 全域變數：控制HOLD視窗是否顯示確認按鈕
-  // 0: 初始狀態，1: 製作中品項點擊狀態，2: 確認狀態
-  const [holdModalMode, setHoldModalMode] = useState<number>(0);
+
 
   // 製作中品項點擊特效狀態管理
   const [selectedMakingItem, setSelectedMakingItem] = useState<string | null>(null);
@@ -129,13 +120,13 @@ export default function WorkstationBoard() {
         return newSet;
       });
       setSelectedMakingItem(null);
-      setHoldModalMode(0);
+      // 清除選中狀態
       console.log('製作中品項已取消選中:', itemId);
     } else {
       // 如果沒有被點擊過，則選中（反灰）
       setClickedMakingItems(prev => new Set([...prev, itemId]));
       setSelectedMakingItem(itemId);
-      setHoldModalMode(1);
+      // 設置選中狀態
       console.log('製作中品項已選中:', itemId);
     }
     
@@ -383,10 +374,7 @@ export default function WorkstationBoard() {
         setShowHoldItemModal(true);
         // 初始化數量編輯狀態為0（讓用戶自己調整）
         setHoldItemEditCount(0);
-        // 如果全域變數為1，則設置為確認狀態（顯示確認按鈕）
-        if (holdModalMode === 1) {
-          setHoldModalMode(2);
-        }
+        // 設置為確認狀態（顯示確認按鈕）
         console.log('Hold Item Modal opened with making item:', makingItem);
       } else {
         console.log('No matching makingItem found');
@@ -605,8 +593,11 @@ export default function WorkstationBoard() {
 
   // 事件處理器
   const handlePartialCancel = () => {
-    // 暫時顯示選擇品項提示
-    setShowSelectItemModal(true);
+    if (!selectedMakingItem && !selectedHoldItem) {
+      setShowSelectItemModal(true);
+      return;
+    }
+    setShowModal(true);
   };
 
   const handleHistoryRecord = () => {
@@ -629,9 +620,7 @@ export default function WorkstationBoard() {
 
 
 
-  const handleHoldEditCountChange = (index: number, value: number) => {
-    setHoldEditCounts(prev => prev.map((v, i) => i === index ? value : v));
-  };
+  // 這個函數已經不再需要，因為我們簡化了部分銷單邏輯
 
   // HOLD視窗數量編輯處理函數
   const handleHoldItemCountChange = (newCount: number) => {
@@ -642,7 +631,7 @@ export default function WorkstationBoard() {
 
   // HOLD視窗確認處理函數
   const handleHoldItemConfirm = () => {
-    if (selectedHoldItemData && holdModalMode === 2) {
+    if (selectedHoldItemData) {
       console.log('HOLD confirmed for item:', selectedHoldItemData, 'with count:', holdItemEditCount);
       
       // 計算要扣除的數量（原始數量 - 異動後的數量）
@@ -704,7 +693,7 @@ export default function WorkstationBoard() {
       
       // 關閉視窗並重置狀態
       setShowHoldItemModal(false);
-      setHoldModalMode(0);
+      // 重置狀態
       setHoldItemEditCount(0);
       
       // 清除選中狀態
@@ -718,56 +707,7 @@ export default function WorkstationBoard() {
     }
   };
 
-  // 部分銷單 Hold 處理
-  const handleHold = () => {
-    // 1. 更新 making: 扣除異動數量
-    const newMaking = [...categoryItems.making];
-    const newHold = [...categoryItems.hold];
-    
-    modalRows.forEach((row, idx) => {
-      const minus = holdEditCounts[idx] || 0;
-      
-      if (minus > 0) {
-        // making 扣除 - 根據 name, table 和 note 來精確匹配
-        const makingIdx = newMaking.findIndex(m => 
-          m.name === row.name && 
-          m.table === row.table && 
-          m.note === row.note
-        );
-        
-        if (makingIdx !== -1) {
-          const originalCount = newMaking[makingIdx].count;
-          newMaking[makingIdx] = { ...newMaking[makingIdx], count: Math.max(0, originalCount - minus) };
-        }
-        
-        // Hold 累加或新增 - 同樣根據 name, table 和 note 來精確匹配
-        const holdIdx = newHold.findIndex(h => 
-          h.name === row.name && 
-          h.table === row.table && 
-          h.note === row.note
-        );
-        if (holdIdx !== -1) {
-          newHold[holdIdx] = { ...newHold[holdIdx], count: newHold[holdIdx].count + minus };
-        } else {
-          newHold.push({ id: row.id, name: row.name, table: row.table, count: minus, note: row.note });
-        }
-      }
-    });
-    
-    // 過濾 making 為 0 的品項
-    const filteredMaking = newMaking.filter(m => m.count > 0);
-    
-    setCategoryItems(prev => ({ ...prev, making: filteredMaking, hold: newHold }));
-    setShowModal(false);
-    
-    // 清理選中狀態，因為品項可能已經被移動或數量變更
-    setSelectedMakingItem(null);
-    setSelectedHoldItem(null);
-    setClickedMakingItems(new Set());
-    setClickedHoldItems(new Set());
-    
-
-  };
+  // 部分銷單 Hold 處理函數已經簡化，不再需要複雜的邏輯
 
   return (
     <div style={styles.mainContainer}>
@@ -816,14 +756,14 @@ export default function WorkstationBoard() {
       </div>
 
       {/* Modal 組件 */}
-      <PartialCancelModal
-        isOpen={showModal}
-        modalRows={modalRows}
-        holdEditCounts={holdEditCounts}
-        onHoldEditCountChange={handleHoldEditCountChange}
-        onHold={handleHold}
+      <SimplePartialCancelModal
+        opened={showModal}
         onClose={() => setShowModal(false)}
-        isHoldItem={isHoldItemModal}
+        selectedItem={selectedMakingItem || selectedHoldItem}
+        onConfirm={(quantity) => {
+          console.log('部分銷單確認:', quantity);
+          setShowModal(false);
+        }}
       />
 
       <SelectItemModal
@@ -836,7 +776,7 @@ export default function WorkstationBoard() {
         selectedItem={selectedHoldItemData}
         onClose={() => setShowHoldItemModal(false)}
         itemType={selectedHoldItemData?.id && categoryItems.making.find(item => item.id === selectedHoldItemData.id) ? 'making' : 'hold'}
-        showConfirmButton={holdModalMode === 2}
+        showConfirmButton={true}
         editCount={holdItemEditCount}
         onCountChange={handleHoldItemCountChange}
         onConfirm={handleHoldItemConfirm}
