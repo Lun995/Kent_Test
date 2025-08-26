@@ -25,7 +25,7 @@ import { mainPageStyles } from '../../styles/mainPageStyles';
 
 
 
-// 工作站介面 - 更新為符合 KDS API 規格
+// 工作站介面 - 更新為符合 KDS API 規格 aa
 interface Workstation {
   uid: number;
   no: string;

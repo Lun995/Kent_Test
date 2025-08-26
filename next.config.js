@@ -10,16 +10,13 @@ const nextConfig = {
   // 圖片優化
   images: {
     domains: [],
-    unoptimized: false,
+    unoptimized: true, // 改為 true 以支援靜態導出
   },
-  // 重定向配置
-  async redirects() {
-    return [];
-  },
-  // 重寫配置
-  async rewrites() {
-    return [];
-  },
+  // 輸出設定 - 確保 SPA 路由正常工作
+  trailingSlash: false,
+  // 移除衝突的配置
+  // output: 'export', // 移除這個，因為會與 API 路由衝突
+  // experimental: { appDir: true }, // 移除過時的配置
 };
 
 module.exports = nextConfig; 
