@@ -10,16 +10,16 @@
   },
   "routes": [
     {
-      "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|css|js|mp3|woff|woff2|ttf|eot))",
-      "dest": "/$1"
-    },
-    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
     {
       "src": "/main/(.*)",
       "dest": "/main/$1"
+    },
+    {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|css|js|mp3|woff|woff2|ttf|eot))",
+      "dest": "/$1"
     },
     {
       "src": "/(.*)",
