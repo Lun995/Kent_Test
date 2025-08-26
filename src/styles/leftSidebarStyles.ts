@@ -74,6 +74,7 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     flex: 0,
     width: '100%',
     display: 'flex',
+    flexDirection: 'column' as const,
     alignItems: 'center',
     justifyContent: 'center',
     padding: '0',
@@ -87,6 +88,23 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
       minHeight: '12vh',
       maxHeight: 'auto',
     }),
+  },
+
+  currentSettingDisplay: {
+    marginTop: '8px',
+    padding: '4px 8px',
+    backgroundColor: '#e9ecef',
+    borderRadius: '4px',
+    fontSize: isMobile ? '0.8rem' : isTablet ? '0.9rem' : '1.0rem',
+    color: '#495057',
+    fontWeight: 500,
+    textAlign: 'center' as const,
+    border: '1px solid #dee2e6',
+  },
+
+  settingLabel: {
+    display: 'block',
+    lineHeight: 1.2,
   },
 
   buttonText: {

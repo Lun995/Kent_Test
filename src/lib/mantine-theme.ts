@@ -100,7 +100,13 @@ export const mantineTheme: MantineThemeOverride = {
     xl: '88em',   // 1408px
   },
 
-  // 組件預設樣式
+
+
+  // 其他設定
+  primaryColor: 'blue',
+  primaryShade: 5,
+  
+  // 載入狀態 - 使用 components 來設定
   components: {
     // Button 組件預設樣式
     Button: {
@@ -139,22 +145,22 @@ export const mantineTheme: MantineThemeOverride = {
         shadow: 'xl',
       },
     },
-  },
 
-  // 其他設定
-  primaryColor: 'blue',
-  primaryShade: 5,
+    // Loader 組件預設樣式
+    Loader: {
+      defaultProps: {
+        type: 'oval',
+      },
+    },
+  },
   
-  // 載入狀態
-  loader: 'oval',
-  
-  // 日期格式
-  dateFormat: 'YYYY/MM/DD',
-  
-  // 數字格式
-  numberFormat: {
-    decimal: '.',
-    thousands: ',',
+  // 其他自訂屬性可以放在 other 中
+  other: {
+    dateFormat: 'YYYY/MM/DD',
+    numberFormat: {
+      decimal: '.',
+      thousands: ',',
+    },
   },
 };
 

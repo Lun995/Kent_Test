@@ -1,12 +1,14 @@
 "use client";
 import { Button } from '@mantine/core';
 import { useState } from 'react';
-import { useAudioPlayer } from '../../hooks/useAudioPlayer';
+
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useGlobalContext } from '../../context/GlobalContext';
 import { leftSidebarStyles } from '../../styles/leftSidebarStyles';
 import { CountdownButton } from './CountdownButton';
 import { NormalButton } from './NormalButton';
 import { SettingButton } from './SettingButton';
+import { CellTypeSettingModal } from './CellTypeSettingModal';
 
 // 工作站介面 - 更新為符合 KDS API 規格
 interface Workstation {
@@ -67,6 +69,9 @@ interface LeftSidebarProps {
   workstations: Workstation[];
   isLoadingWorkstations: boolean;
   workstationError: string | null;
+  selectedMakingItem: any;
+  selectedHoldItem: any;
+  onHoldSelectedItem: () => void;
 }
 
 export function LeftSidebar({
@@ -81,15 +86,33 @@ export function LeftSidebar({
   totalItems,
   workstations,
   isLoadingWorkstations,
-  workstationError
+  workstationError,
+  selectedMakingItem,
+  selectedHoldItem,
+  onHoldSelectedItem
 }: LeftSidebarProps) {
   const { isMobile, isTablet } = useIsMobile();
-  const { playSound } = useAudioPlayer();
+  const { displayState } = useGlobalContext();
   const [showWorkstationMenu, setShowWorkstationMenu] = useState(false);
+  const [punchInTime, setPunchInTime] = useState<string | null>(null);
+  const [isPunchedIn, setIsPunchedIn] = useState(false);
+  const [showCellTypeSettings, setShowCellTypeSettings] = useState(false);
 
   const handleCountdownReset = () => {
-    playSound('/notification.mp3');
-    // 這裡應該觸發倒數計時重置邏輯
+    // 打卡機功能：記錄打卡時間或重置
+    if (!isPunchedIn) {
+      // 打卡
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('zh-TW', { hour12: false });
+      setPunchInTime(timeString);
+      setIsPunchedIn(true);
+      console.log('打卡時間:', timeString);
+    } else {
+      // 重置打卡
+      setPunchInTime(null);
+      setIsPunchedIn(false);
+      console.log('打卡已重置');
+    }
   };
 
   const handleWorkstationClick = () => {
@@ -106,24 +129,25 @@ export function LeftSidebar({
   return (
     <div style={styles.container}>
       <div style={styles.buttonContainer}>
-        {/* 欄位 1: 倒數計時按鈕 */}
+        {/* 欄位 1: 打卡機按鈕 */}
         <div style={styles.buttonField}>
           <CountdownButton
             onClick={handleCountdownReset}
             currentItem={currentItem}
             totalItems={totalItems}
             countdown={countdown}
+            isPunchedIn={isPunchedIn}
+            punchInTime={punchInTime}
           />
         </div>
 
-        {/* 欄位 2: 部分銷單按鈕 */}
+        {/* 欄位 2: HOLD 按鈕 */}
         <div style={styles.buttonField}>
           <NormalButton
-            onClick={onPartialCancel}
+            onClick={(selectedMakingItem || selectedHoldItem) ? onHoldSelectedItem : onPartialCancel}
             color="blue"
           >
-            <div style={styles.buttonText}>部分</div>
-            <div style={styles.buttonText}>銷單</div>
+            <div style={styles.buttonText}>HOLD</div>
           </NormalButton>
         </div>
 
@@ -171,7 +195,7 @@ export function LeftSidebar({
         {/* 欄位 7: 設定按鈕 */}
         <div style={styles.settingButtonContainer}>
           <SettingButton
-            onClick={onSettings}
+            onClick={() => setShowCellTypeSettings(true)}
             color="dark"
             variant="setting"
           >
@@ -212,16 +236,6 @@ export function LeftSidebar({
                       background: currentWorkstation === station.name ? '#e0e0e0' : '#fff',
                     }}
                     onClick={() => handleWorkstationSelect(station.name)}
-                    onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                      if (currentWorkstation !== station.name) {
-                        e.currentTarget.style.backgroundColor = '#f0f0f0';
-                      }
-                    }}
-                    onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                      if (currentWorkstation !== station.name) {
-                        e.currentTarget.style.backgroundColor = '#fff';
-                      }
-                    }}
                   >
                     {station.name}
                   </Button>
@@ -243,6 +257,12 @@ export function LeftSidebar({
           </div>
         </div>
       )}
+
+      {/* 列數設定 Modal */}
+      <CellTypeSettingModal
+        isOpen={showCellTypeSettings}
+        onClose={() => setShowCellTypeSettings(false)}
+      />
     </div>
   );
 }
