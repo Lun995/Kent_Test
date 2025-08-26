@@ -10,6 +10,14 @@ import {
 } from '../../components/WorkstationBoard';
 import { HoldItemModal } from '../../components/WorkstationBoard/HoldItemModal';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { 
+  testCardData, 
+  convertTestCardDataToCategoryItems,
+  OrderItem, 
+  CategoryItems, 
+  CardData, 
+  CardStatus 
+} from '../../lib/test-card-data';
 
 import { mainPageStyles } from '../../styles/mainPageStyles';
 
@@ -83,20 +91,9 @@ export default function WorkstationBoard() {
   
   // 狀態管理
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [categoryItems, setCategoryItems] = useState<CategoryItems>({
-    making: [
-      { id: 'snow-beef-1', name: '雪花牛', count: 3, table: '內用A1', note: '油花少一點' },
-      { id: 'snow-beef-2', name: '雪花牛', count: 1, table: '內用A1', note: '雪花多一點雪花多一點雪花多一點很重要所以獎三遍' },
-      { id: 'premium-pork-making', name: '上選豬肉', count: 10, table: '內用A1' },
-    ],
-    hold: [],
-    waiting: [
-      { id: 'pork-fish-combo', name: '豬魚雙饗', count: 2, table: 'C2', note: '上選豬+魚片' },
-      { id: 'beef-combo', name: '絕代雙牛', count: 1, table: 'C2', note: '雪花牛+嫩煎牛' },
-      { id: 'snow-beef-c2', name: '雪花牛', count: 1, table: 'C2', note: '油花少一點' },
-      { id: 'premium-pork', name: '上選豬肉', count: 5, table: 'C3' },
-    ],
-  });
+  const [categoryItems, setCategoryItems] = useState<CategoryItems>(() => 
+    convertTestCardDataToCategoryItems(testCardData)
+  );
 
 
   // 製作中品項點擊特效狀態管理
@@ -205,12 +202,28 @@ export default function WorkstationBoard() {
         const newMaking = [...prev.making];
         const newWaiting = [...prev.waiting];
         
-        // 取出第一個待製作牌卡的所有品項
-        const firstTable = newWaiting[0]?.table;
-        if (firstTable) {
-          const itemsToMove = newWaiting.filter(item => item.table === firstTable);
+        // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
+        const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
+        let nextTableToMove = null;
+        
+        // 找到優先級最高的待製作牌卡
+        for (const priorityTable of priorityOrder) {
+          const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
+          if (hasPriorityTable) {
+            nextTableToMove = priorityTable;
+            break;
+          }
+        }
+        
+        // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
+        if (!nextTableToMove && newWaiting.length > 0) {
+          nextTableToMove = newWaiting[0]?.table;
+        }
+        
+        if (nextTableToMove) {
+          const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
           
-          console.log('準備移動品項：', { firstTable, itemsToMove });
+          console.log('準備移動品項：', { nextTableToMove, itemsToMove });
           
           // 移動品項到製作中
           const moveTimestamp = Date.now();
@@ -223,7 +236,7 @@ export default function WorkstationBoard() {
           });
           
           // 從待製作中移除
-          const remainingWaiting = newWaiting.filter(item => item.table !== firstTable);
+          const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
           newWaiting.length = 0;
           newWaiting.push(...remainingWaiting);
           
@@ -267,11 +280,27 @@ export default function WorkstationBoard() {
         const hiddenItems = newMaking.filter(item => item.table === hiddenTableName);
         
         if (hiddenItems.length > 0 && newWaiting.length > 0) {
-          // 從待製作中取出第一個牌卡的所有品項，一起移動到製作中
-          const firstTable = newWaiting[0]?.table;
-          if (firstTable) {
+          // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
+          const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
+          let nextTableToMove = null;
+          
+          // 找到優先級最高的待製作牌卡
+          for (const priorityTable of priorityOrder) {
+            const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
+            if (hasPriorityTable) {
+              nextTableToMove = priorityTable;
+              break;
+            }
+          }
+          
+          // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
+          if (!nextTableToMove && newWaiting.length > 0) {
+            nextTableToMove = newWaiting[0]?.table;
+          }
+          
+          if (nextTableToMove) {
             // 找到同一桌號的所有品項
-            const itemsToMove = newWaiting.filter(item => item.table === firstTable);
+            const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
             
             // 將這些品項一起移動到製作中，並確保它們保持在同一張牌卡中
             // 為所有移動的品項使用相同的時間戳，確保它們被分組到同一張牌卡
@@ -286,7 +315,7 @@ export default function WorkstationBoard() {
             });
             
             // 從待製作中移除這些品項
-            const remainingWaiting = newWaiting.filter(item => item.table !== firstTable);
+            const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
             newWaiting.length = 0; // 清空原陣列
             newWaiting.push(...remainingWaiting); // 重新填充
           }
@@ -307,10 +336,26 @@ export default function WorkstationBoard() {
             const newMaking = [...prev.making];
             const newWaiting = [...prev.waiting];
             
-            // 取出第一個待製作牌卡的所有品項
-            const firstTable = newWaiting[0]?.table;
-            if (firstTable) {
-              const itemsToMove = newWaiting.filter(item => item.table === firstTable);
+            // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
+            const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
+            let nextTableToMove = null;
+            
+            // 找到優先級最高的待製作牌卡
+            for (const priorityTable of priorityOrder) {
+              const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
+              if (hasPriorityTable) {
+                nextTableToMove = priorityTable;
+                break;
+              }
+            }
+            
+            // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
+            if (!nextTableToMove && newWaiting.length > 0) {
+              nextTableToMove = newWaiting[0]?.table;
+            }
+            
+            if (nextTableToMove) {
+              const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
               
               // 移動品項到製作中
               const moveTimestamp = Date.now();
@@ -323,7 +368,7 @@ export default function WorkstationBoard() {
               });
               
               // 從待製作中移除
-              const remainingWaiting = newWaiting.filter(item => item.table !== firstTable);
+              const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
               newWaiting.length = 0;
               newWaiting.push(...remainingWaiting);
               
@@ -408,8 +453,8 @@ export default function WorkstationBoard() {
 
   // 倒數計時 state
   const [countdown, setCountdown] = useState(300); // 300秒倒數
-  const [currentItem, setCurrentItem] = useState(2); // 當前項目
-  const [totalItems, setTotalItems] = useState(20); // 總項目數
+     const [currentItem, setCurrentItem] = useState(1); // 當前項目
+   const [totalItems, setTotalItems] = useState(0); // 總項目數，將根據實際資料動態計算
   const [timeColor, setTimeColor] = useState('#009944'); // 製作中排卡顏色狀態
   const [startTime, setStartTime] = useState(() => Date.now()); // 頁面載入時間
   
@@ -468,17 +513,23 @@ export default function WorkstationBoard() {
     fetchWorkstations(storeId);
   }, []);
 
-  // 監聽製作中品項變化，當沒有品項時自動觸發遞補
-  useEffect(() => {
-    // 如果製作中沒有品項，且有待製作品項，則自動觸發遞補
-    if (categoryItems.making.length === 0 && categoryItems.waiting.length > 0) {
-      console.log('檢測到製作中沒有品項，自動觸發遞補');
-      // 延遲執行，確保狀態更新完成
-      setTimeout(() => {
-        forceAutoReplenish();
-      }, 100);
-    }
-  }, [categoryItems.making.length, categoryItems.waiting.length]);
+     // 監聽製作中品項變化，當沒有品項時自動觸發遞補
+   useEffect(() => {
+     // 如果製作中沒有品項，且有待製作品項，則自動觸發遞補
+     if (categoryItems.making.length === 0 && categoryItems.waiting.length > 0) {
+       console.log('檢測到製作中沒有品項，自動觸發遞補');
+       // 延遲執行，確保狀態更新完成
+       setTimeout(() => {
+         forceAutoReplenish();
+       }, 100);
+     }
+   }, [categoryItems.making.length, categoryItems.waiting.length]);
+
+   // 動態計算總項目數
+   useEffect(() => {
+     const total = categoryItems.making.length + categoryItems.hold.length + categoryItems.waiting.length;
+     setTotalItems(total);
+   }, [categoryItems.making.length, categoryItems.hold.length, categoryItems.waiting.length]);
 
   // 添加動畫樣式和品項選中樣式
   useEffect(() => {
@@ -709,6 +760,37 @@ export default function WorkstationBoard() {
 
   // 部分銷單 Hold 處理函數已經簡化，不再需要複雜的邏輯
 
+  // 計算待製作牌卡數量（以牌卡計算非品項）
+  const getUniqueWaitingTables = () => {
+    const uniqueTables = new Set();
+    categoryItems.waiting.forEach(item => {
+      uniqueTables.add(item.table);
+    });
+    return Array.from(uniqueTables);
+  };
+
+  // 計算逾時批次數量
+  const getOverdueBatches = () => {
+    // 檢查製作中是否有逾時的品項（超過10秒）
+    const currentTime = Date.now();
+    const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+    
+    if (elapsedSeconds >= 10) {
+      // 只計算可見的製作中牌卡（未隱藏的）
+      const overdueTables = new Set();
+      categoryItems.making.forEach(item => {
+        const cardKey = `making-${item.table}`;
+        // 只計算未隱藏的牌卡
+        if (!hiddenMakingCards.has(cardKey)) {
+          overdueTables.add(item.table);
+        }
+      });
+      return overdueTables.size;
+    }
+    
+    return 0;
+  };
+
   return (
     <div style={styles.mainContainer}>
       {/* 左側功能列 */}
@@ -732,11 +814,11 @@ export default function WorkstationBoard() {
 
       {/* 右側主內容 */}
       <div style={styles.rightContent}>
-        {/* 頂部狀態欄 */}
-        <StatusBar
-          pendingBatches={15}
-          overdueBatches={3}
-        />
+                 {/* 頂部狀態欄 */}
+         <StatusBar
+           pendingBatches={getUniqueWaitingTables().length}
+           overdueBatches={getOverdueBatches()}
+         />
         
         {/* 工作看板 */}
         <WorkBoard 
@@ -782,11 +864,11 @@ export default function WorkstationBoard() {
         onConfirm={handleHoldItemConfirm}
       />
 
-      <BackupScreen
-        isVisible={showBackupScreen}
-        onClose={() => setShowBackupScreen(false)}
-        totalCount={25}
-      />
+             <BackupScreen
+         isVisible={showBackupScreen}
+         onClose={() => setShowBackupScreen(false)}
+         totalCount={categoryItems.making.length + categoryItems.hold.length + categoryItems.waiting.length}
+       />
       
 
     </div>

@@ -3,10 +3,12 @@ import { Button } from '@mantine/core';
 import { useState } from 'react';
 
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useGlobalContext } from '../../context/GlobalContext';
 import { leftSidebarStyles } from '../../styles/leftSidebarStyles';
 import { CountdownButton } from './CountdownButton';
 import { NormalButton } from './NormalButton';
 import { SettingButton } from './SettingButton';
+import { CellTypeSettingModal } from './CellTypeSettingModal';
 
 // 工作站介面 - 更新為符合 KDS API 規格
 interface Workstation {
@@ -90,9 +92,11 @@ export function LeftSidebar({
   onHoldSelectedItem
 }: LeftSidebarProps) {
   const { isMobile, isTablet } = useIsMobile();
+  const { displayState } = useGlobalContext();
   const [showWorkstationMenu, setShowWorkstationMenu] = useState(false);
   const [punchInTime, setPunchInTime] = useState<string | null>(null);
   const [isPunchedIn, setIsPunchedIn] = useState(false);
+  const [showCellTypeSettings, setShowCellTypeSettings] = useState(false);
 
   const handleCountdownReset = () => {
     // 打卡機功能：記錄打卡時間或重置
@@ -191,7 +195,7 @@ export function LeftSidebar({
         {/* 欄位 7: 設定按鈕 */}
         <div style={styles.settingButtonContainer}>
           <SettingButton
-            onClick={onSettings}
+            onClick={() => setShowCellTypeSettings(true)}
             color="dark"
             variant="setting"
           >
@@ -232,16 +236,6 @@ export function LeftSidebar({
                       background: currentWorkstation === station.name ? '#e0e0e0' : '#fff',
                     }}
                     onClick={() => handleWorkstationSelect(station.name)}
-                    onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                      if (currentWorkstation !== station.name) {
-                        e.currentTarget.style.backgroundColor = '#f0f0f0';
-                      }
-                    }}
-                    onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                      if (currentWorkstation !== station.name) {
-                        e.currentTarget.style.backgroundColor = '#fff';
-                      }
-                    }}
                   >
                     {station.name}
                   </Button>
@@ -263,6 +257,12 @@ export function LeftSidebar({
           </div>
         </div>
       )}
+
+      {/* 列數設定 Modal */}
+      <CellTypeSettingModal
+        isOpen={showCellTypeSettings}
+        onClose={() => setShowCellTypeSettings(false)}
+      />
     </div>
   );
 }
