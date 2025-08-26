@@ -53,7 +53,7 @@ export function HoldQuantitySelector({
         <NumberInput
           label="HOLD 數量"
           value={quantity}
-          onChange={(val) => setQuantity(val || 1)}
+          onChange={(val) => setQuantity(typeof val === 'number' ? val : 1)}
           min={1}
           max={item.completedCount}
           step={1}

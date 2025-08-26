@@ -21,20 +21,7 @@ import {
 
 import { mainPageStyles } from '../../styles/mainPageStyles';
 
-// 型別定義
-interface OrderItem {
-  id: string;
-  name: string;
-  count: number;
-  table: string;
-  note?: string;
-}
-
-interface CategoryItems {
-  making: OrderItem[];
-  hold: OrderItem[];
-  waiting: OrderItem[];
-}
+// 型別定義 - 使用從 test-card-data 導入的類型
 
 
 
