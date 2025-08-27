@@ -44,10 +44,17 @@ export default function LoginPage() {
     
     if (!password.trim()) {
       setLoginMessage('密碼錯誤！');
+      setShowSuccessModal(false);
+      setShowNoShiftModal(false);
       return;
     }
 
     setIsLoading(true);
+
+    // 清除所有之前的訊息狀態
+    setLoginMessage('');
+    setShowSuccessModal(false);
+    setShowNoShiftModal(false);
 
     // 立即處理登入邏輯，無延遲
     if (password === '1234') {
@@ -74,6 +81,18 @@ export default function LoginPage() {
       // 強制滾輪回到最上方
       window.scrollTo(0, 0);
     }
+  };
+
+  // 清除所有訊息狀態
+  const clearAllMessages = () => {
+    setLoginMessage('');
+    setShowSuccessModal(false);
+    setShowNoShiftModal(false);
+  };
+
+  // 當用戶開始輸入時清除舊訊息
+  const handleInputChange = () => {
+    clearAllMessages();
   };
 
   // 打卡機功能處理
@@ -192,7 +211,10 @@ export default function LoginPage() {
                   autoComplete="off"
                   placeholder="Username"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    handleInputChange();
+                  }}
                   onBlur={handleInputBlur}
                   style={{
                     height: '55px',
@@ -231,7 +253,10 @@ export default function LoginPage() {
                   id="txPassword"
                   placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    handleInputChange();
+                  }}
                   onBlur={handleInputBlur}
                   style={{
                     height: '55px',
@@ -280,7 +305,8 @@ export default function LoginPage() {
                   textAlign: 'center',
                   width: '100%',
                   fontSize: '18px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  minHeight: '30px' // 確保訊息區域有固定高度
                 }}>
                   {showSuccessModal && (
                     <span style={{ color: '#4ade80' }}>登入成功！正在跳轉到主頁面...</span>
@@ -288,7 +314,7 @@ export default function LoginPage() {
                   {showNoShiftModal && (
                     <span style={{ color: '#f97316' }}>無開班資料，請聯繫管理員確認開班狀態</span>
                   )}
-                  {!showSuccessModal && !showNoShiftModal && loginMessage && (
+                  {loginMessage && !showSuccessModal && !showNoShiftModal && (
                     <span style={{ color: '#fff' }}>{loginMessage}</span>
                   )}
                 </div>
