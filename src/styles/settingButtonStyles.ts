@@ -41,7 +41,7 @@ export const settingButtonStyles = ({ isMobile, isTablet, variant }: ResponsiveP
     }),
     ...(variant === 'setting' && {
       borderTop: '2px solid #222', // 保持設定按鈕的上邊線
-      borderBottom: 'none', // 移除設定按鈕的下邊線
+      borderBottom: isTablet ? '4px solid #696969' : 'none', // iPad模式下補上下邊線，其他模式移除下邊線
       boxShadow: 'none',
     }),
   },

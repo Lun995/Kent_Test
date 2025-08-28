@@ -27,10 +27,10 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     alignSelf: 'stretch',
     position: 'relative' as const,
     ...(isTablet && {
-      minHeight: 'calc(100vh - 66px)', // 與主區塊高度保持一致，減少50px
-      maxHeight: 'calc(100vh - 66px)', // 與主區塊高度保持一致，減少50px
+      minHeight: 'calc(100vh - 20px)', // 與主區塊高度保持一致
+      maxHeight: 'calc(100vh - 20px)', // 與主區塊高度保持一致
       overflow: 'hidden',
-      height: 'calc(100vh - 66px)', // 與主區塊高度保持一致，減少50px
+      height: 'calc(100vh - 20px)', // 與主區塊高度保持一致
       width: '15vw',
       zIndex: 2000,
       position: 'relative' as const,
@@ -66,7 +66,7 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     maxHeight: 'auto',
     minHeight: 'calc((100vh - 66px) / 7)', // 7個欄位均分高度，與主區塊保持一致，減少50px
     ...(isTablet && {
-      minHeight: 'calc((100vh - 66px) / 7)', // 平板模式下也使用相同計算，減少50px
+      minHeight: 'calc((100vh - 20px) / 7)', // 平板模式下與主區塊高度保持一致
       maxHeight: 'auto',
     }),
   },
@@ -89,7 +89,7 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     borderBottom: 'none', // 移除下邊線
     borderBottomLeftRadius: 0, // 移除左下角圓弧框限
     ...(isTablet && {
-      minHeight: 'calc((100vh - 66px) / 7)', // 平板模式下也使用相同計算，減少50px
+      minHeight: 'calc((100vh - 20px) / 7)', // 平板模式下與主區塊高度保持一致
       maxHeight: 'auto',
     }),
   },
