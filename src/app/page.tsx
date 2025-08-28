@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function LoginPage() {
+  const { isTablet } = useIsMobile();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -129,7 +131,7 @@ export default function LoginPage() {
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(5px)',
             position: 'relative',
-            marginTop: '60px',
+            marginTop: isTablet ? '80px' : '60px',
             zIndex: 5,
             display: 'flex',
             flexDirection: 'column',
