@@ -129,7 +129,7 @@ export default function LoginPage() {
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(5px)',
             position: 'relative',
-            marginTop: '40px',
+            marginTop: '60px',
             zIndex: 5,
             display: 'flex',
             flexDirection: 'column',

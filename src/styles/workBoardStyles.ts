@@ -45,8 +45,8 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     padding: 0,
     overflow: 'hidden',
     maxHeight: '100%',
-    borderBottom: '2px solid #222',
-    borderRight: '2px solid #222'
+    borderBottom: 'none', // 移除下邊線
+    borderRight: 'none' // 移除右邊線
   },
 
   columnHeader: {
@@ -57,7 +57,7 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     fontSize: isMobile ? '1.5rem' : isTablet ? '1.7rem' : '1.9rem',
     padding: isMobile ? '2px 1px' : '3px 2px',
     border: 'none',
-    borderBottom: '2px solid #222',
+    borderBottom: 'none', // 移除下邊線
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -92,7 +92,7 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     textAlign: 'center' as const,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    borderBottom: '1px solid #222',
+    borderBottom: 'none', // 移除下邊線
     color: '#fff',
   },
 

@@ -331,7 +331,7 @@ export function WorkBoard({
                             cursor: 'pointer',
                             backgroundColor: clickedMakingItems.has(makingItem.id) ? '#d3d3d3' : '#fff',
                             border: selectedMakingItem === makingItem.id ? '2px solid #ff0000' : '2px solid #ddd',
-                            borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                            borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
                             transition: 'all 0.2s ease',
                             height: '100px', // 統一高度
                           }}
@@ -356,7 +356,7 @@ export function WorkBoard({
                                   textAlign: 'left',
                                   minWidth: 0,
                                   overflow: 'visible',
-                                  paddingLeft: '25px'
+                                  paddingLeft: displayState.celltype === '4' ? (isTablet ? '5px' : '15px') : '15px' // 4列模式且iPad版面時進一步減少向左縮排，3列模式也減少縮排
                                 }}>
                                  <span style={styles.itemName}>
                                    {makingItem.name}
@@ -376,7 +376,7 @@ export function WorkBoard({
                                        wordWrap: 'break-word',
                                        overflowWrap: 'break-word'
                                      }}>
-                                       {truncateNoteText(makingItem.note)}
+                                       {truncateNoteText(makingItem.note, displayState.celltype)}
                                      </span>
                                    </div>
                                  )}
@@ -389,7 +389,7 @@ export function WorkBoard({
                                   display: 'flex',
                                   justifyContent: 'center',
                                   alignItems: 'center',
-                                  paddingRight: '130px',
+                                  paddingRight: displayState.celltype === '4' ? '155px' : '130px', // 4列模式增加向右縮排25px
                                   alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                 }}>
                                 <span style={{
@@ -463,7 +463,7 @@ export function WorkBoard({
                             marginBottom: '8px',
                             backgroundColor: clickedHoldItems.has(item.id) ? '#d3d3d3' : '#fff',
                             border: selectedHoldItem === item.id ? '2px solid #ff0000' : '2px solid #ddd',
-                            borderBottom: itemIdx < categoryItems.hold.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                            borderBottom: itemIdx < categoryItems.hold.length - 1 ? '1px solid #ccc' : '2px solid #555',
                             cursor: 'pointer',
                             height: '100px', // 統一高度
                           }}
@@ -494,13 +494,13 @@ export function WorkBoard({
                                alignItems: 'flex-start',
                                gap: '8px'
                              }}>
-                               <div style={{ 
-                                 flex: '0 0 60%', 
-                                 textAlign: 'left',
-                                 minWidth: 0,
-                                 overflow: 'visible',
-                                 paddingLeft: '25px'
-                               }}>
+                                                                                                <div style={{ 
+                                   flex: '0 0 60%', 
+                                   textAlign: 'left',
+                                   minWidth: 0,
+                                   overflow: 'visible',
+                                   paddingLeft: displayState.celltype === '4' ? (isTablet ? '5px' : '15px') : '15px' // 4列模式且iPad版面時進一步減少向左縮排，3列模式也減少縮排
+                                 }}>
                                  <span style={styles.itemName}>
                                    {item.name}
                                  </span>
@@ -519,7 +519,7 @@ export function WorkBoard({
                                        wordWrap: 'break-word',
                                        overflowWrap: 'break-word'
                                      }}>
-                                       {truncateNoteText(item.note)}
+                                       {truncateNoteText(item.note, displayState.celltype)}
                                      </span>
                                    </div>
                                  )}
@@ -532,7 +532,7 @@ export function WorkBoard({
                                  display: 'flex',
                                  justifyContent: 'center',
                                  alignItems: 'center',
-                                 paddingRight: '80px',
+                                 paddingRight: displayState.celltype === '4' ? '105px' : '80px', // 4列模式增加向右縮排25px
                                  alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                }}>
                                 <span style={{
@@ -609,7 +609,7 @@ export function WorkBoard({
                                 key={`${item.table}-${item.note || 'no-note'}`}
                                 style={{
                                   border: '2px solid #ddd',
-                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
                                   width: '100%',
                                   boxSizing: 'border-box',
                                   padding: '12px',
@@ -639,7 +639,7 @@ export function WorkBoard({
                                      textAlign: 'left',
                                      minWidth: 0,
                                      overflow: 'visible',
-                                     paddingLeft: '25px'
+                                     paddingLeft: displayState.celltype === '4' ? (isTablet ? '5px' : '15px') : '15px' // 4列模式且iPad版面時進一步減少向左縮排，3列模式也減少縮排
                                    }}>
                                      <span style={styles.itemName}>
                                        {item.name}
@@ -659,7 +659,7 @@ export function WorkBoard({
                                            wordWrap: 'break-word',
                                            overflowWrap: 'break-word'
                                          }}>
-                                           {truncateNoteText(item.note)}
+                                           {truncateNoteText(item.note, displayState.celltype)}
                                          </span>
                                        </div>
                                      )}
@@ -672,7 +672,7 @@ export function WorkBoard({
                                      display: 'flex',
                                      justifyContent: 'center',
                                      alignItems: 'center',
-                                     paddingRight: '70px',
+                                     paddingRight: displayState.celltype === '4' ? '95px' : '60px', // 4列模式增加向右縮排25px，3列模式也減少縮排
                                      alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                    }}>
                                       <span style={{
@@ -752,7 +752,7 @@ export function WorkBoard({
                                 key={`${item.table}-${item.note || 'no-note'}`}
                                 style={{
                                   border: '2px solid #ddd',
-                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
                                   width: '100%',
                                   boxSizing: 'border-box',
                                   padding: '12px',
@@ -777,13 +777,13 @@ export function WorkBoard({
                                     alignItems: 'flex-start',
                                     gap: '8px'
                                   }}>
-                                                                                                               <div style={{ 
-                                        flex: '0 0 65%', 
-                                        textAlign: 'left',
-                                        minWidth: 0,
-                                        overflow: 'visible',
-                                        paddingLeft: '25px'
-                                      }}>
+                                                                                                                                                         <div style={{ 
+                                            flex: '0 0 65%', 
+                                            textAlign: 'left',
+                                            minWidth: 0,
+                                            overflow: 'visible',
+                                            paddingLeft: displayState.celltype === '4' ? (isTablet ? '5px' : '15px') : '15px' // 4列模式且iPad版面時進一步減少向左縮排，3列模式也減少縮排
+                                          }}>
                                         <span style={styles.itemName}>
                                           {item.name}
                                         </span>
@@ -792,18 +792,18 @@ export function WorkBoard({
                                           <div style={{ 
                                             marginTop: '2px'
                                           }}>
-                                            <span style={{ 
-                                              ...styles.itemNote, 
-                                              fontSize: '1.2em', 
-                                              color: '#666',
-                                              textAlign: 'left',
-                                              lineHeight: '1.2',
-                                              maxWidth: '100%',
-                                              wordWrap: 'break-word',
-                                              overflowWrap: 'break-word'
-                                            }}>
-                                              {truncateNoteText(item.note)}
-                                            </span>
+                                                                                       <span style={{ 
+                                             ...styles.itemNote, 
+                                             fontSize: '1.2em', 
+                                             color: '#666',
+                                             textAlign: 'left',
+                                             lineHeight: '1.2',
+                                             maxWidth: '100%',
+                                             wordWrap: 'break-word',
+                                             overflowWrap: 'break-word'
+                                           }}>
+                                             {truncateNoteText(item.note, displayState.celltype)}
+                                           </span>
                                           </div>
                                         )}
                                       </div>
@@ -815,7 +815,7 @@ export function WorkBoard({
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        paddingRight: '70px',
+                                        paddingRight: displayState.celltype === '4' ? '95px' : '60px', // 4列模式增加向右縮排25px，3列模式也減少縮排
                                         alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                       }}>
                                       <span style={{
@@ -893,7 +893,7 @@ export function WorkBoard({
                                 key={`third-${item.table}-${item.note || 'no-note'}`}
                                 style={{
                                   border: '2px solid #ddd',
-                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ddd',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
                                   width: '100%',
                                   boxSizing: 'border-box',
                                   padding: '12px',
@@ -923,7 +923,7 @@ export function WorkBoard({
                                           textAlign: 'left',
                                           minWidth: 0,
                                           overflow: 'visible',
-                                          paddingLeft: '25px'
+                                          paddingLeft: displayState.celltype === '4' ? (isTablet ? '5px' : '15px') : '15px' // 4列模式且iPad版面時進一步減少向左縮排，3列模式也減少縮排
                                         }}>
                                           <span style={styles.itemName}>
                                             {item.name}
@@ -933,18 +933,18 @@ export function WorkBoard({
                                             <div style={{ 
                                               marginTop: '2px'
                                             }}>
-                                              <span style={{ 
-                                                ...styles.itemNote, 
-                                                fontSize: '1.1em', 
-                                                color: '#666',
-                                                textAlign: 'left',
-                                                lineHeight: '1.2',
-                                                maxWidth: '100%',
-                                                wordWrap: 'break-word',
-                                                overflowWrap: 'break-word'
-                                              }}>
-                                                {truncateNoteText(item.note)}
-                                              </span>
+                                                                                           <span style={{ 
+                                               ...styles.itemNote, 
+                                               fontSize: '1.1em', 
+                                               color: '#666',
+                                               textAlign: 'left',
+                                               lineHeight: '1.2',
+                                               maxWidth: '100%',
+                                               wordWrap: 'break-word',
+                                               overflowWrap: 'break-word'
+                                             }}>
+                                               {truncateNoteText(item.note, displayState.celltype)}
+                                             </span>
                                             </div>
                                           )}
                                         </div>
@@ -956,7 +956,7 @@ export function WorkBoard({
                                           display: 'flex',
                                           justifyContent: 'center',
                                           alignItems: 'center',
-                                          paddingRight: '80px',
+                                          paddingRight: displayState.celltype === '4' ? '105px' : '80px', // 4列模式增加向右縮排25px
                                           alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                         }}>
                                       <span style={{

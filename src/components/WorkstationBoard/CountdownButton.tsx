@@ -65,7 +65,7 @@ export function CountdownButton({
         // 未打卡的顯示
         <>
           <div style={styles.countdownText}>
-            {currentItem}/{totalItems}項
+            自動
           </div>
           <div style={styles.countdownText}>
             {countdown}秒

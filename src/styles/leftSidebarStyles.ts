@@ -8,17 +8,17 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     width: isMobile ? '20vw' : isTablet ? '15vw' : '8vw',
     minWidth: isMobile ? 60 : isTablet ? 100 : 40,
     maxWidth: '100vw',
-    height: '100vh',
+    height: 'calc(100vh - 24px)', // 與主區塊高度保持一致
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
     background: '#f5f5f5',
-    borderRight: '2px solid #222',
-    borderBottom: '2px solid #222',
-    borderTopLeftRadius: 24,
-    borderBottomLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
+    borderRight: '4px solid #696969', // 右邊線顏色調整為與畫面外框線相同
+    borderBottom: 'none', // 移除下邊線
+    borderTopLeftRadius: 12, // 調整為與主容器一致的圓角
+    borderBottomLeftRadius: 12, // 調整為與主容器一致的圓角
+    borderTopRightRadius: 0, // 右邊線改為直線，不需要圓弧
+    borderBottomRightRadius: 0, // 右邊線改為直線，不需要圓弧
     padding: 0,
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
@@ -27,10 +27,10 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     alignSelf: 'stretch',
     position: 'relative' as const,
     ...(isTablet && {
-      minHeight: '100vh',
-      maxHeight: '100vh',
+      minHeight: 'calc(100vh - 66px)', // 與主區塊高度保持一致，減少50px
+      maxHeight: 'calc(100vh - 66px)', // 與主區塊高度保持一致，減少50px
       overflow: 'hidden',
-      height: '100vh',
+      height: 'calc(100vh - 66px)', // 與主區塊高度保持一致，減少50px
       width: '15vw',
       zIndex: 2000,
       position: 'relative' as const,
@@ -60,32 +60,36 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '4px',
+    padding: '0', // 移除 padding，避免按鈕與邊界有間距
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
     maxHeight: 'auto',
+    minHeight: 'calc((100vh - 66px) / 7)', // 7個欄位均分高度，與主區塊保持一致，減少50px
     ...(isTablet && {
-      minHeight: '10vh',
-      maxHeight: '12vh',
+      minHeight: 'calc((100vh - 66px) / 7)', // 平板模式下也使用相同計算，減少50px
+      maxHeight: 'auto',
     }),
   },
 
   settingButtonContainer: {
-    flex: 0,
+    flex: 1, // 改為 flex: 1，讓它與其他按鈕欄位高度一致
     width: '100%',
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '0',
+    padding: '0', // 確保沒有 padding
+    margin: '0', // 確保沒有 margin
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
     maxHeight: 'auto',
     zIndex: 9999,
     position: 'relative' as const,
-    minHeight: '80px',
+    minHeight: 'calc((100vh - 66px) / 7)', // 與其他欄位保持一致的高度，減少50px
+    borderBottom: 'none', // 移除下邊線
+    borderBottomLeftRadius: 0, // 移除左下角圓弧框限
     ...(isTablet && {
-      minHeight: '12vh',
+      minHeight: 'calc((100vh - 66px) / 7)', // 平板模式下也使用相同計算，減少50px
       maxHeight: 'auto',
     }),
   },
