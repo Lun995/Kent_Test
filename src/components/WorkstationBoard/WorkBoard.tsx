@@ -322,19 +322,19 @@ export function WorkBoard({
                               e.currentTarget.style.backgroundColor = 'transparent';
                             }
                           }}
-                          style={{
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            padding: '12px',
-                            borderRadius: '4px',
-                            marginBottom: '8px',
-                            cursor: 'pointer',
-                            backgroundColor: clickedMakingItems.has(makingItem.id) ? '#d3d3d3' : '#fff',
-                            border: selectedMakingItem === makingItem.id ? '2px solid #ff0000' : '2px solid #ddd',
-                            borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
-                            transition: 'all 0.2s ease',
-                            height: '100px', // 統一高度
-                          }}
+                                                     style={{
+                             width: '100%',
+                             boxSizing: 'border-box',
+                             padding: '12px',
+                             borderRadius: '4px',
+                             marginBottom: '8px',
+                             cursor: 'pointer',
+                             backgroundColor: clickedMakingItems.has(makingItem.id) ? '#d3d3d3' : '#fff',
+                             border: selectedMakingItem === makingItem.id ? '2px solid #ff0000' : '2px solid #ccc',
+                             borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ccc',
+                             transition: 'all 0.2s ease',
+                             height: '100px', // 統一高度
+                           }}
                         >
                                                      <div style={{ 
                              display: 'flex', 
@@ -455,18 +455,18 @@ export function WorkBoard({
                                               {categoryItems.hold.map((item, itemIdx) => (
                         <div
                           key={`temp-${item.id}`}
-                          style={{
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            padding: '12px',
-                            borderRadius: '4px',
-                            marginBottom: '8px',
-                            backgroundColor: clickedHoldItems.has(item.id) ? '#d3d3d3' : '#fff',
-                            border: selectedHoldItem === item.id ? '2px solid #ff0000' : '2px solid #ddd',
-                            borderBottom: itemIdx < categoryItems.hold.length - 1 ? '1px solid #ccc' : '2px solid #555',
-                            cursor: 'pointer',
-                            height: '100px', // 統一高度
-                          }}
+                                                     style={{
+                             width: '100%',
+                             boxSizing: 'border-box',
+                             padding: '12px',
+                             borderRadius: '4px',
+                             marginBottom: '8px',
+                             backgroundColor: clickedHoldItems.has(item.id) ? '#d3d3d3' : '#fff',
+                             border: selectedHoldItem === item.id ? '2px solid #ff0000' : '2px solid #ccc',
+                             borderBottom: itemIdx < categoryItems.hold.length - 1 ? '1px solid #ccc' : '2px solid #ccc',
+                             cursor: 'pointer',
+                             height: '100px', // 統一高度
+                           }}
                           onClick={() => onHoldItemSelect(item.id)}
                           onMouseEnter={(e) => {
                             if (!clickedHoldItems.has(item.id)) {
@@ -561,11 +561,11 @@ export function WorkBoard({
               </td>
             )}
 
-                        {/* 待製作欄位 - 第一列 (根據可用欄位數量動態調整) */}
+                                    {/* 待製作欄位 - 第一列 (根據可用欄位數量動態調整) */}
             {availableWaitingColumns > 0 && (
               <td style={styles.tableCell}>
                 <div style={styles.columnHeader}>待製作</div>
-                                 {Object.entries(groupItemsByTable(categoryItems.waiting))
+                 {Object.entries(groupItemsByTable(categoryItems.waiting))
                    .filter(([tableName, items], idx) => {
                      // 只顯示分配給第一列的桌號
                      return cardDistribution.firstRow.includes(tableName);
@@ -608,8 +608,8 @@ export function WorkBoard({
                               <div
                                 key={`${item.table}-${item.note || 'no-note'}`}
                                 style={{
-                                  border: '2px solid #ddd',
-                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
+                                  border: '2px solid #ccc',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ccc',
                                   width: '100%',
                                   boxSizing: 'border-box',
                                   padding: '12px',
@@ -751,8 +751,8 @@ export function WorkBoard({
                               <div
                                 key={`${item.table}-${item.note || 'no-note'}`}
                                 style={{
-                                  border: '2px solid #ddd',
-                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
+                                  border: '2px solid #ccc',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ccc',
                                   width: '100%',
                                   boxSizing: 'border-box',
                                   padding: '12px',
@@ -892,8 +892,8 @@ export function WorkBoard({
                               <div
                                 key={`third-${item.table}-${item.note || 'no-note'}`}
                                 style={{
-                                  border: '2px solid #ddd',
-                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #555',
+                                  border: '2px solid #ccc',
+                                  borderBottom: itemIdx < items.length - 1 ? '1px solid #ccc' : '2px solid #ccc',
                                   width: '100%',
                                   boxSizing: 'border-box',
                                   padding: '12px',

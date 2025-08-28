@@ -94,25 +94,11 @@ export function LeftSidebar({
   const { isMobile, isTablet } = useIsMobile();
   const { displayState } = useGlobalContext();
   const [showWorkstationMenu, setShowWorkstationMenu] = useState(false);
-  const [punchInTime, setPunchInTime] = useState<string | null>(null);
-  const [isPunchedIn, setIsPunchedIn] = useState(false);
   const [showCellTypeSettings, setShowCellTypeSettings] = useState(false);
 
   const handleCountdownReset = () => {
-    // 打卡機功能：記錄打卡時間或重置
-    if (!isPunchedIn) {
-      // 打卡
-      const now = new Date();
-      const timeString = now.toLocaleTimeString('zh-TW', { hour12: false });
-      setPunchInTime(timeString);
-      setIsPunchedIn(true);
-      console.log('打卡時間:', timeString);
-    } else {
-      // 重置打卡
-      setPunchInTime(null);
-      setIsPunchedIn(false);
-      console.log('打卡已重置');
-    }
+    // 重整當下頁面
+    window.location.reload();
   };
 
   const handleWorkstationClick = () => {
@@ -136,8 +122,8 @@ export function LeftSidebar({
             currentItem={currentItem}
             totalItems={totalItems}
             countdown={countdown}
-            isPunchedIn={isPunchedIn}
-            punchInTime={punchInTime}
+            isPunchedIn={false}
+            punchInTime=""
           />
         </div>
 

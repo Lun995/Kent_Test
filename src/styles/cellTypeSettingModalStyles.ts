@@ -248,7 +248,8 @@ export const cellTypeSettingModalStyles = ({ isMobile, isTablet }: CellTypeSetti
     background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
     borderTop: '1px solid rgba(0, 0, 0, 0.08)',
     display: 'flex',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     gap: '16px',
   },
   
@@ -277,6 +278,19 @@ export const cellTypeSettingModalStyles = ({ isMobile, isTablet }: CellTypeSetti
     transition: 'all 0.3s ease',
     boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
     textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+  },
+
+  logoutButton: {
+    padding: '12px 24px',
+    border: '2px solid #dc2626',
+    borderRadius: '12px',
+    backgroundColor: 'white',
+    color: '#dc2626',
+    fontSize: isMobile ? '14px' : '16px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   },
   };
 };

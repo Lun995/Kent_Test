@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useGlobalContext } from '../../context/GlobalContext';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { cellTypeSettingModalStyles } from '../../styles/cellTypeSettingModalStyles';
@@ -10,6 +11,7 @@ interface CellTypeSettingModalProps {
 }
 
 export function CellTypeSettingModal({ isOpen, onClose }: CellTypeSettingModalProps) {
+  const router = useRouter();
   const { displayState, displayDispatch } = useGlobalContext();
   const { isMobile, isTablet } = useIsMobile();
   const [selectedCellType, setSelectedCellType] = useState<'3' | '4'>(displayState.celltype);
@@ -32,6 +34,12 @@ export function CellTypeSettingModal({ isOpen, onClose }: CellTypeSettingModalPr
     setExpandedSetting1(false);
     setExpandedSetting2(false);
     onClose();
+  };
+
+  const handleLogout = () => {
+    // 清除用戶狀態（如果需要）
+    // 導轉到登入首頁
+    router.push('/');
   };
 
   const toggleDisplay = () => {
@@ -174,19 +182,27 @@ export function CellTypeSettingModal({ isOpen, onClose }: CellTypeSettingModalPr
         
         <div style={styles.footer}>
           <button 
-            onClick={handleCancel}
-            style={styles.cancelButton}
+            onClick={handleLogout}
+            style={styles.logoutButton}
           >
-            取消
+            登出
           </button>
-          {expandedDisplay && (
+          <div style={{ display: 'flex', gap: '16px' }}>
             <button 
-              onClick={handleConfirm}
-              style={styles.confirmButton}
+              onClick={handleCancel}
+              style={styles.cancelButton}
             >
-              確認
+              取消
             </button>
-          )}
+            {expandedDisplay && (
+              <button 
+                onClick={handleConfirm}
+                style={styles.confirmButton}
+              >
+                確認
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

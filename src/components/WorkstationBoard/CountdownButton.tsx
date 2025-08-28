@@ -5,34 +5,34 @@ import { countdownButtonStyles } from '../../styles/countdownButtonStyles';
 
 interface CountdownButtonProps {
   onClick: () => void;
+  disabled?: boolean;
   currentItem: number;
   totalItems: number;
   countdown: number;
-  disabled?: boolean;
-  isPunchedIn?: boolean;
-  punchInTime?: string | null;
+  isPunchedIn: boolean;
+  punchInTime: string;
 }
 
 export function CountdownButton({ 
   onClick, 
-  currentItem, 
-  totalItems, 
-  countdown,
   disabled = false,
-  isPunchedIn = false,
-  punchInTime = null
+  currentItem,
+  totalItems,
+  countdown,
+  isPunchedIn,
+  punchInTime
 }: CountdownButtonProps) {
   const { isMobile, isTablet } = useIsMobile();
   const styles = countdownButtonStyles({ isMobile, isTablet });
 
   return (
-    <Button
-      variant="filled"
-      color={isPunchedIn ? "green" : "dark"}
-      size={isMobile ? 'xs' : isTablet ? 'sm' : 'md'}
-      style={styles.button}
-      onClick={onClick}
-      disabled={disabled}
+         <Button
+       variant="filled"
+               color={isPunchedIn ? "green" : "dark"}
+       size={isMobile ? 'xs' : isTablet ? 'sm' : 'md'}
+       style={styles.button}
+       onClick={onClick}
+       disabled={disabled}
       onMouseEnter={(e) => {
         if (!disabled) {
           e.currentTarget.style.backgroundColor = '#e9ecef';
@@ -48,33 +48,18 @@ export function CountdownButton({
         }
       }}
     >
-      {isPunchedIn ? (
-        // 打卡後的顯示
-        <>
-          <div style={styles.countdownText}>
-            已打卡
-          </div>
-          <div style={styles.countdownText}>
-            {punchInTime}
-          </div>
-          <div style={styles.countdownText}>
-            點擊重置
-          </div>
-        </>
-      ) : (
-        // 未打卡的顯示
-        <>
-          <div style={styles.countdownText}>
-            自動
-          </div>
-          <div style={styles.countdownText}>
-            {countdown}秒
-          </div>
-          <div style={styles.countdownText}>
-            點擊打卡
-          </div>
-        </>
-      )}
+       {/* 倒數計時按鈕 */}
+       <>
+         <div style={styles.countdownText}>
+           {currentItem}/{totalItems}
+         </div>
+         <div style={styles.countdownText}>
+           {countdown}秒
+         </div>
+         <div style={styles.countdownText}>
+           {isPunchedIn ? "已打卡" : "自動"}
+         </div>
+       </>
     </Button>
   );
 }
