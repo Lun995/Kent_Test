@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useGlobalContext } from '../../context/GlobalContext';
 import { leftSidebarStyles } from '../../styles/leftSidebarStyles';
-import { CountdownButton } from './CountdownButton';
+import CountdownButton from './CountdownButton';
 import { NormalButton } from './NormalButton';
 import { SettingButton } from './SettingButton';
 import { CellTypeSettingModal } from './CellTypeSettingModal';
+import { WorkstationSelectionModal } from './WorkstationSelectionModal';
 
 // 工作站介面 - 更新為符合 KDS API 規格
 interface Workstation {
@@ -102,11 +103,11 @@ export function LeftSidebar({
   };
 
   const handleWorkstationClick = () => {
-    setShowWorkstationMenu(!showWorkstationMenu);
+    setShowWorkstationMenu(true);
   };
 
-  const handleWorkstationSelect = (station: string) => {
-    onWorkstationChange(station);
+  const handleWorkstationSelect = (workstation: Workstation) => {
+    onWorkstationChange(workstation.name);
     setShowWorkstationMenu(false);
   };
 
@@ -190,59 +191,15 @@ export function LeftSidebar({
         </div>
       </div>
 
-      {/* 工作站選單彈跳視窗 */}
-      {showWorkstationMenu && (
-        <div style={styles.workstationMenu}>
-          <div style={styles.workstationMenuHeader}>
-            選擇工作站
-          </div>
-          
-          <div style={styles.workstationMenuContent}>
-            {workstationError ? (
-              <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
-                {workstationError}
-              </div>
-            ) : isLoadingWorkstations ? (
-              <div style={{ padding: '20px', textAlign: 'center' }}>
-                載入中...
-              </div>
-            ) : workstations.length === 0 ? (
-              <div style={{ padding: '20px', textAlign: 'center' }}>
-                無可用工作站
-              </div>
-            ) : (
-              workstations.map((station) => (
-                <div key={station.uid} style={styles.workstationMenuItem}>
-                  <Button
-                    variant="subtle"
-                    color="dark"
-                    size={isMobile ? 'lg' : 'xl'}
-                    style={{
-                      ...styles.workstationMenuButton,
-                      background: currentWorkstation === station.name ? '#e0e0e0' : '#fff',
-                    }}
-                    onClick={() => handleWorkstationSelect(station.name)}
-                  >
-                    {station.name}
-                  </Button>
-                </div>
-              ))
-            )}
-          </div>
-          
-          <div style={styles.workstationMenuFooter}>
-            <Button
-              variant="filled"
-              color="gray"
-              size={isMobile ? 'lg' : 'xl'}
-              style={styles.cancelButton}
-              onClick={() => setShowWorkstationMenu(false)}
-            >
-              取消
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* 工作站選擇模态框 */}
+      <WorkstationSelectionModal
+        isOpen={showWorkstationMenu}
+        onClose={() => setShowWorkstationMenu(false)}
+        workstations={workstations}
+        currentWorkstation={currentWorkstation}
+        onWorkstationSelect={handleWorkstationSelect}
+        isLoading={isLoadingWorkstations}
+      />
 
       {/* 列數設定 Modal */}
       <CellTypeSettingModal

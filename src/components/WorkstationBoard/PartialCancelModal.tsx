@@ -105,6 +105,8 @@ export function PartialCancelModal({
               )}
             </div>
           ))}
+          
+
         </div>
         
         <div style={styles.footer}>

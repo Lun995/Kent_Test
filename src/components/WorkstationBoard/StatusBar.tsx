@@ -13,16 +13,16 @@ export function StatusBar({ pendingBatches, overdueBatches }: StatusBarProps) {
 
   return (
     <div style={styles.container}>
-      {/* 待製作批次 */}
-      <div style={styles.statusItem}>
-        <span style={styles.statusText}>待製作批次</span>
-        <div style={styles.statusNumber}>{pendingBatches}</div>
-      </div>
-      
       {/* 逾時批次 */}
       <div style={styles.statusItem}>
         <span style={styles.statusText}>逾時批次</span>
         <div style={styles.statusNumber}>{overdueBatches}</div>
+      </div>
+      
+      {/* 待製作批次 */}
+      <div style={styles.statusItem}>
+        <span style={styles.statusText}>待製作批次</span>
+        <div style={styles.statusNumber}>{pendingBatches}</div>
       </div>
     </div>
   );

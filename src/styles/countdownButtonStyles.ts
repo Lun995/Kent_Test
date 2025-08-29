@@ -32,7 +32,7 @@ export const countdownButtonStyles = ({ isMobile, isTablet }: ResponsiveProps) =
   },
 
   countdownText: {
-    fontSize: isMobile ? '0.9rem' : isTablet ? '1.1rem' : '1.3rem',
+    fontSize: isMobile ? '0.9rem' : isTablet ? '1.7rem' : '1.3rem',
     fontWeight: 700,
     color: '#495057'
   },

@@ -244,7 +244,10 @@ export function WorkBoard({
         <tbody style={styles.tbody}>
           <tr style={styles.tableRow}>
             {/* 製作中欄位 */}
-            <td style={styles.tableCell}>
+            <td style={{
+              ...styles.tableCell,
+              borderRight: '2px solid #000'
+            }}>
               <div style={styles.columnHeader}>製作中</div>
               {Object.entries(groupItemsByTable(categoryItems.making)).map(([tableName, items], idx) => {
                 const cardKey = `making-${tableName}`;
@@ -274,43 +277,33 @@ export function WorkBoard({
                     className={timeColor === '#d7263d' ? 'overdue-card' : ''}
                     style={{
                       ...styles.orderCard,
-                      border: timeColor === '#d7263d' ? '3px solid #d7263d' : '2px solid #222',
-                      boxShadow: timeColor === '#d7263d' ? 'none' : '0 2px 8px rgba(0,0,0,0.1)',
+                      border: '2px solid #222',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     }}
                   >
-                    <div 
-                      style={{
-                        ...styles.cardHeader,
-                        background: timeColor,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                      }}
-                      onDoubleClick={() => onCardHeaderDoubleClick('making', cardKey)}
-                      title="雙擊隱藏此牌卡"
-                    >
-                      #{cardNumber}
-                    {timeColor === '#d7263d' && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '20px',
-                        height: '20px',
-                        background: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ff6b35\'%3E%3Cpath d=\'M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2M12 8C13.1 8 14 8.9 14 10C14 11.1 13.1 12 12 12C10.9 12 10 11.1 10 10C10 8.9 10.9 8 12 8M12 14C13.1 14 14 14.9 14 16C14 17.1 13.1 18 12 18C10.9 18 10 17.1 10 16C10 14.9 10.9 14 12 14Z\'/%3E%3C/svg%3E") no-repeat center center',
-                        backgroundSize: 'contain',
-                        animation: 'flame 1.5s infinite',
-                        opacity: 0.8,
-                        zIndex: 1,
-                      }} />
-                    )}
-                  </div>
+                                         <div 
+                       style={{
+                         ...styles.cardHeader,
+                         background: timeColor,
+                         position: 'relative',
+                         overflow: 'hidden',
+                         cursor: 'pointer',
+                       }}
+                       onDoubleClick={() => onCardHeaderDoubleClick('making', cardKey)}
+                       title="雙擊隱藏此牌卡"
+                     >
+                       {/* 逾時時顯示火焰圖示 */}
+                       {timeColor === '#d7263d' && (
+                         <div className="flame-icon"></div>
+                       )}
+                       #{cardNumber}
+                     </div>
                   <div style={styles.cardContent}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                       {items.map((makingItem, itemIdx) => (
                         <div
                           key={makingItem.id}
+                          className="making-item-row"
                           onClick={() => onMakingItemSelect(makingItem.id)}
                           onMouseEnter={(e) => {
                             if (!clickedMakingItems.has(makingItem.id)) {
@@ -358,7 +351,7 @@ export function WorkBoard({
                                   overflow: 'visible',
                                   paddingLeft: displayState.celltype === '4' ? (isTablet ? '5px' : '15px') : '15px' // 4列模式且iPad版面時進一步減少向左縮排，3列模式也減少縮排
                                 }}>
-                                 <span style={styles.itemName}>
+                                 <span className="item-name" style={styles.itemName}>
                                    {makingItem.name}
                                  </span>
                                  {/* 品項備註行 - 應用文字規則 */}
@@ -366,7 +359,7 @@ export function WorkBoard({
                                    <div style={{ 
                                      marginTop: '2px'
                                    }}>
-                                     <span style={{ 
+                                     <span className="item-note" style={{ 
                                        ...styles.itemNote, 
                                        fontSize: '1.1em', 
                                        color: '#666',
@@ -376,7 +369,7 @@ export function WorkBoard({
                                        wordWrap: 'break-word',
                                        overflowWrap: 'break-word'
                                      }}>
-                                       {truncateNoteText(makingItem.note, displayState.celltype)}
+                                       {truncateNoteText(makingItem.note, displayState.celltype, isTablet, isMobile)}
                                      </span>
                                    </div>
                                  )}
@@ -392,18 +385,21 @@ export function WorkBoard({
                                   paddingRight: displayState.celltype === '4' ? '155px' : '130px', // 4列模式增加向右縮排25px
                                   alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                 }}>
-                                <span style={{
-                                  ...styles.itemBadge,
-                                  display: 'inline-block',
-                                  padding: '6px 10px',
-                                  backgroundColor: '#6c757d',
-                                  color: 'white',
-                                  borderRadius: '4px',
-                                  fontSize: '1.4rem',
-                                  fontWeight: '600',
-                                  width: '25px',
-                                  textAlign: 'center'
-                                }}>
+                                                                 <span 
+                                   className={(makingItem.name === '雪花牛油花多一點' ? 'snowflake-beef-badge ' : '') + 'qty-badge'}
+                                   style={{
+                                     ...styles.itemBadge,
+                                     display: 'inline-block',
+                                     padding: '6px 10px',
+                                     backgroundColor: '#6c757d',
+                                     color: 'white',
+                                     borderRadius: '4px',
+                                     fontSize: '1.4rem',
+                                     fontWeight: '600',
+                                     width: '25px',
+                                     textAlign: 'center'
+                                   }}
+                                 >
                                   {makingItem.count}
                                 </span>
                               </div>
@@ -420,11 +416,14 @@ export function WorkBoard({
 
                         {/* Hold 欄位 - 放在製作中與待製作中間 */}
             {categoryItems.hold.length > 0 && !hiddenHoldCards.has('hold-main') && (
-              <td style={styles.tableCell}>
+              <td style={{
+                ...styles.tableCell,
+                borderRight: '2px solid #000'
+              }}>
                 <div style={{
                   ...styles.columnHeader,
                   padding: '4px 2px' // 增加10px高度 (原本3px + 10px = 13px)
-                }}>Hold</div>
+                }}>HOLD</div>
                 {/* 合併所有Hold品項到同一張牌卡 */}
                 <div
                   style={{
@@ -519,7 +518,7 @@ export function WorkBoard({
                                        wordWrap: 'break-word',
                                        overflowWrap: 'break-word'
                                      }}>
-                                       {truncateNoteText(item.note, displayState.celltype)}
+                                       {truncateNoteText(item.note, displayState.celltype, isTablet, isMobile)}
                                      </span>
                                    </div>
                                  )}
@@ -563,7 +562,10 @@ export function WorkBoard({
 
                                     {/* 待製作欄位 - 第一列 (根據可用欄位數量動態調整) */}
             {availableWaitingColumns > 0 && (
-              <td style={styles.tableCell}>
+              <td style={{
+                ...styles.tableCell,
+                borderRight: availableWaitingColumns >= 2 ? '2px solid #000' : 'none'
+              }}>
                 <div style={styles.columnHeader}>待製作</div>
                  {Object.entries(groupItemsByTable(categoryItems.waiting))
                    .filter(([tableName, items], idx) => {
@@ -659,7 +661,7 @@ export function WorkBoard({
                                            wordWrap: 'break-word',
                                            overflowWrap: 'break-word'
                                          }}>
-                                           {truncateNoteText(item.note, displayState.celltype)}
+                                           {truncateNoteText(item.note, displayState.celltype, isTablet, isMobile)}
                                          </span>
                                        </div>
                                      )}
@@ -706,7 +708,10 @@ export function WorkBoard({
 
                                       {/* 待製作欄位 - 第二列 (根據可用欄位數量動態調整) */}
             {availableWaitingColumns >= 2 && (
-              <td style={styles.tableCell}>
+              <td style={{
+                ...styles.tableCell,
+                borderRight: availableWaitingColumns >= 3 ? '2px solid #000' : 'none'
+              }}>
                 <div style={styles.columnHeader}>待製作</div>
                                  {Object.entries(groupItemsByTable(categoryItems.waiting))
                    .filter(([tableName, items], idx) => {
@@ -802,7 +807,7 @@ export function WorkBoard({
                                              wordWrap: 'break-word',
                                              overflowWrap: 'break-word'
                                            }}>
-                                             {truncateNoteText(item.note, displayState.celltype)}
+                                             {truncateNoteText(item.note, displayState.celltype, isTablet, isMobile)}
                                            </span>
                                           </div>
                                         )}
@@ -943,7 +948,7 @@ export function WorkBoard({
                                                wordWrap: 'break-word',
                                                overflowWrap: 'break-word'
                                              }}>
-                                               {truncateNoteText(item.note, displayState.celltype)}
+                                               {truncateNoteText(item.note, displayState.celltype, isTablet, isMobile)}
                                              </span>
                                             </div>
                                           )}

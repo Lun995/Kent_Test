@@ -145,9 +145,37 @@ export function CellTypeSettingModal({ isOpen, onClose }: CellTypeSettingModalPr
               
               {expandedSetting1 && (
                 <div style={styles.expandedContent}>
-                  <div style={styles.placeholderContainer}>
-                    <div style={styles.placeholderIcon}>🚧</div>
-                    <p style={styles.placeholderText}>設定1 功能開發中...</p>
+                  <div style={styles.optionsContainer}>
+                    <a 
+                      href="/breathing-borders"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '12px 16px',
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#059669';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#10b981';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                      }}
+                    >
+                      <span>✨</span>
+                      邊框呼吸效果展示
+                    </a>
                   </div>
                 </div>
               )}

@@ -112,118 +112,22 @@ export const leftSidebarStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
   },
 
   buttonText: {
-    fontSize: isMobile ? '1.0rem' : isTablet ? '1.2rem' : '1.4rem',
+    fontSize: isMobile ? '1.0rem' : isTablet ? '1.8rem' : '1.4rem',
     fontWeight: 700,
     color: '#495057'
   },
 
   workstationText: {
     color: '#495057',
-    fontSize: isMobile ? '0.9rem' : isTablet ? '1.1rem' : '1.3rem',
+    fontSize: isMobile ? '0.9rem' : isTablet ? '1.7rem' : '1.3rem',
     fontWeight: 700
   },
 
   settingText: {
     color: '#495057',
-    fontSize: isMobile ? '1.3rem' : isTablet ? '1.5rem' : '1.7rem',
+    fontSize: isMobile ? '1.3rem' : isTablet ? '2.1rem' : '1.7rem',
     fontWeight: 700
   },
 
-  // 工作站選單樣式
-  workstationMenu: {
-    position: 'fixed' as const,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    background: '#fff',
-    zIndex: 999999,
-    width: isMobile ? '320px' : '380px',
-    maxWidth: '90vw',
-    minWidth: isMobile ? '240px' : '280px',
-    minHeight: isMobile ? '200px' : '240px',
-    maxHeight: '80vh',
-    border: '3px solid #222',
-    borderRadius: 16,
-    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-    padding: 0,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-  },
 
-  workstationMenuHeader: {
-    background: '#ffc107',
-    color: '#222',
-    fontWeight: 900,
-    fontSize: isMobile ? '1.6rem' : isTablet ? '1.8rem' : '2.0rem',
-    textAlign: 'center' as const,
-    borderRadius: '13px 13px 0 0',
-    padding: isMobile ? '16px 0' : '20px 0',
-    width: '100%',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    borderBottom: '2px solid #222',
-    fontFamily: 'Microsoft JhengHei, 微軟正黑體, sans-serif',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-
-  workstationMenuContent: {
-    width: '100%',
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 20,
-    padding: isMobile ? '20px' : '24px',
-    minHeight: 0,
-    overflow: 'hidden'
-  },
-
-  workstationMenuItem: {
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '0 16px'
-  },
-
-  workstationMenuButton: {
-    width: '100%',
-    fontSize: isMobile ? '1.4rem' : isTablet ? '1.6rem' : '1.8rem',
-    fontWeight: 700,
-    padding: isMobile ? '16px 20px' : '20px 24px',
-    borderRadius: 0,
-    border: 'none',
-    color: '#222',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    textAlign: 'center' as const,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: isMobile ? '60px' : '70px',
-  },
-
-  workstationMenuFooter: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    padding: isMobile ? '16px' : '20px',
-    borderTop: '1px solid #ddd'
-  },
-
-  cancelButton: {
-    fontSize: isMobile ? '1.3rem' : isTablet ? '1.5rem' : '1.7rem',
-    fontWeight: 700,
-    padding: isMobile ? '12px 20px' : '16px 28px',
-    borderRadius: 8,
-    minWidth: isMobile ? '80px' : '100px',
-  },
 });

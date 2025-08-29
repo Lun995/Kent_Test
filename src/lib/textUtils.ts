@@ -2,26 +2,28 @@
  * 文字處理工具函數
  */
 
+import { getNoteTextLimit } from './constants';
+
 /**
- * 處理品項備註文字，根據顯示模式調整最大長度
+ * 處理品項備註文字，根據顯示模式和設備類型調整最大長度
  * @param text 原始文字
  * @param celltype 顯示模式：'3'為3列模式，'4'為4列模式
+ * @param isTablet 是否為平板設備
+ * @param isMobile 是否為移動設備
  * @returns 處理後的文字
  */
-export function truncateNoteText(text: string, celltype?: '3' | '4'): string {
+export function truncateNoteText(
+  text: string, 
+  celltype?: '3' | '4',
+  isTablet: boolean = false,
+  isMobile: boolean = false
+): string {
   if (!text) {
     return text;
   }
   
-  // 根據 celltype 決定最大長度
-  let maxLength: number;
-  if (celltype === '4') {
-    maxLength = 12; // 4列模式：12個字
-  } else if (celltype === '3') {
-    maxLength = 18; // 3列模式：18個字
-  } else {
-    maxLength = 18; // 預設：18個字（3列模式）
-  }
+  // 使用全域配置獲取字數限制
+  const maxLength = getNoteTextLimit(celltype, isTablet, isMobile);
   
   if (text.length <= maxLength) {
     return text;

@@ -48,6 +48,30 @@ export function SettingButton({
           }
         }
       }}
+      onMouseDown={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = 'scale(0.95)';
+          e.currentTarget.style.backgroundColor = '#d1ecf1';
+          if (variant === 'setting') {
+            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.4)';
+          }
+          if (variant === 'workstation') {
+            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.4)';
+          }
+        }
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = 'scale(1.02)';
+          e.currentTarget.style.backgroundColor = '#e9ecef';
+          if (variant === 'setting') {
+            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          }
+          if (variant === 'workstation') {
+            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          }
+        }
+      }}
     >
       {children}
     </Button>

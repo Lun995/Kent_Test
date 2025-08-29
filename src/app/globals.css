@@ -97,6 +97,31 @@ html, body {
   z-index: 9999 !important;
 }
 
+/* 工作站选择模态框动画 */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 加载动画 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 工作站切换按钮悬停效果 */
+@keyframes buttonGlow {
+  0% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3); }
+  50% { box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5); }
+  100% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3); }
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -145,3 +170,74 @@ input, textarea {
     font-size: 22px;
   }
 }
+
+/* 紅色呼吸動畫 */
+@keyframes redPulse {
+  0% {
+    border-color: #ff0000;
+    box-shadow: 0 0 8px #ff0000, 0 0 16px rgba(255, 0, 0, 0.3);
+    transform: scale(1.05);
+  }
+  50% {
+    border-color: #ff6666;
+    box-shadow: 0 0 20px #ff6666, 0 0 30px rgba(255, 102, 102, 0.5);
+    transform: scale(1.1);
+  }
+  100% {
+    border-color: #ff0000;
+    box-shadow: 0 0 8px #ff0000, 0 0 16px rgba(255, 0, 0, 0.3);
+    transform: scale(1.05);
+  }
+}
+
+/* 雪花牛油花少一點的紅色發光動畫 - 參考逾時效果 */
+@keyframes redGlowPulse {
+  0% {
+    border-color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3);
+    transform: scale(1.05);
+  }
+  50% {
+    border-color: #ff4444;
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.8), 0 0 35px rgba(255, 0, 0, 0.6);
+    transform: scale(1.05);
+  }
+  100% {
+    border-color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3);
+    transform: scale(1.05);
+  }
+}
+
+/* 牌卡#1外框呼吸特效 - 逾時牌卡發紅光特效 */
+@keyframes redGlow {
+  0% { 
+    box-shadow: 0 0 10px rgba(215, 38, 61, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(215, 38, 61, 0.8), 0 0 35px rgba(215, 38, 61, 0.6);
+  }
+  100% { 
+    box-shadow: 0 0 10px rgba(215, 38, 61, 0.5);
+  }
+}
+
+/* 雪花牛油花少一點的邊框呼吸特效 - 結合redGlow發光效果 */
+@keyframes redGlowBorder {
+  0% {
+    border-color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3);
+    transform: scale(1.05);
+  }
+  50% {
+    border-color: #ff6666;
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.8), 0 0 35px rgba(255, 0, 0, 0.6);
+    transform: scale(1.1);
+  }
+  100% {
+    border-color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3);
+    transform: scale(1.05);
+  }
+}
+

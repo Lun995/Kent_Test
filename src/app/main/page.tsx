@@ -400,15 +400,15 @@ export default function WorkstationBoard() {
       // 查找對應的製作中品項
       const makingItem = categoryItems.making.find(item => item.id === selectedMakingItem);
       
-      if (makingItem) {
-        // 設置Hold品項視窗數據，顯示製作中品項的明細
-        setSelectedHoldItemData(makingItem);
-        setShowHoldItemModal(true);
-        // 初始化數量編輯狀態為0（讓用戶自己調整）
-        setHoldItemEditCount(0);
-        // 設置為確認狀態（顯示確認按鈕）
-        console.log('Hold Item Modal opened with making item:', makingItem);
-      } else {
+             if (makingItem) {
+         // 設置Hold品項視窗數據，顯示製作中品項的明細
+         setSelectedHoldItemData(makingItem);
+         setShowHoldItemModal(true);
+         // 初始化數量編輯狀態為1（不得為0）
+         setHoldItemEditCount(1);
+         // 設置為確認狀態（顯示確認按鈕）
+         console.log('Hold Item Modal opened with making item:', makingItem);
+       } else {
         console.log('No matching makingItem found');
         setShowSelectItemModal(true);
       }
@@ -528,46 +528,16 @@ export default function WorkstationBoard() {
         100% { transform: scale(1); }
       }
       
-      @keyframes flame {
-        0% { 
-          transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          opacity: 0.8;
-        }
-        25% { 
-          transform: translate(-50%, -50%) scale(1.2) rotate(10deg);
-          opacity: 1;
-        }
-        50% { 
-          transform: translate(-50%, -50%) scale(0.8) rotate(-10deg);
-          opacity: 0.9;
-        }
-        75% { 
-          transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
-          opacity: 1;
-        }
-        100% { 
-          transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          opacity: 0.8;
-        }
-      }
+      /* @keyframes flame 動畫已移除 */
       
-      /* 逾時牌卡發紅光特效 */
-      @keyframes redGlow {
-        0% { 
-          box-shadow: 0 0 10px rgba(215, 38, 61, 0.5);
-        }
-        50% { 
-          box-shadow: 0 0 25px rgba(215, 38, 61, 0.8), 0 0 35px rgba(215, 38, 61, 0.6);
-        }
-        100% { 
-          box-shadow: 0 0 10px rgba(215, 38, 61, 0.5);
-        }
-      }
+      /* 逾時牌卡發紅光特效 - 已移除 */
+      /* @keyframes redGlow 動畫已移除 */
       
-      /* 逾時牌卡樣式 */
+      /* 逾時牌卡樣式 - 紅色粗框線 */
       .overdue-card {
-        animation: redGlow 2s ease-in-out infinite;
-        border: 3px solid #d7263d !important;
+        /* 逾時時顯示紅色粗框線 */
+        border: 4px solid #d7263d !important;
+        box-shadow: 0 0 15px rgba(215, 38, 61, 0.3) !important;
       }
       
       /* 製作中品項選中樣式 */
@@ -588,6 +558,39 @@ export default function WorkstationBoard() {
         background-color: transparent;
         transition: all 0.2s ease;
       }
+      
+      /* 雪花牛品項數量網底glow特效 */
+      .snowflake-beef-badge {
+        background: #6c757d !important;
+        border: 2px solid #fff !important;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        text-shadow: 0 0 10px rgba(0, 0, 0, 0.8) !important;
+        animation: glow 2s ease-in-out infinite alternate !important;
+      }
+      
+      @keyframes glow {
+        from {
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.8) !important;
+        }
+        to {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 255, 255, 0.6) !important;
+        }
+      }
+      
+                                                                                   /* 火焰燃燒動態圖示 - 使用 GIF 圖片 */
+          .flame-icon {
+            position: absolute !important;
+            left: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 2.8rem !important;
+            height: 2.8rem !important;
+            background: url('/fire.gif') no-repeat center center !important;
+            background-size: contain !important;
+            z-index: 10 !important;
+          }
     `;
     document.head.appendChild(style);
     return () => {
@@ -660,12 +663,12 @@ export default function WorkstationBoard() {
 
   // 這個函數已經不再需要，因為我們簡化了部分銷單邏輯
 
-  // HOLD視窗數量編輯處理函數
-  const handleHoldItemCountChange = (newCount: number) => {
-    // 限制數量範圍：下限為0，上限為目前數量
-    const clampedCount = Math.max(0, Math.min(newCount, selectedHoldItemData?.count || 0));
-    setHoldItemEditCount(clampedCount);
-  };
+     // HOLD視窗數量編輯處理函數
+   const handleHoldItemCountChange = (newCount: number) => {
+     // 限制數量範圍：下限為1，上限為目前數量（不得為0）
+     const clampedCount = Math.max(1, Math.min(newCount, selectedHoldItemData?.count || 1));
+     setHoldItemEditCount(clampedCount);
+   };
 
   // HOLD視窗確認處理函數
   const handleHoldItemConfirm = () => {
@@ -799,9 +802,9 @@ export default function WorkstationBoard() {
         onHoldSelectedItem={handleHoldSelectedItem}
       />
 
-      {/* 右側主內容 */}
-      <div style={styles.rightContent}>
-                 {/* 頂部狀態欄 */}
+             {/* 右側主內容 */}
+       <div style={styles.rightContent}>
+         {/* 頂部狀態欄 */}
          <StatusBar
            pendingBatches={getUniqueWaitingTables().length}
            overdueBatches={getOverdueBatches()}
@@ -845,7 +848,7 @@ export default function WorkstationBoard() {
         selectedItem={selectedHoldItemData}
         onClose={() => setShowHoldItemModal(false)}
         itemType={selectedHoldItemData?.id && categoryItems.making.find(item => item.id === selectedHoldItemData.id) ? 'making' : 'hold'}
-        showConfirmButton={true}
+        showConfirmButton={selectedHoldItemData?.id && categoryItems.making.find(item => item.id === selectedHoldItemData.id) ? true : false}
         editCount={holdItemEditCount}
         onCountChange={handleHoldItemCountChange}
         onConfirm={handleHoldItemConfirm}
