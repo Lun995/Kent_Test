@@ -86,7 +86,8 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
   },
 
   cardHeader: {
-    padding: isMobile ? '4px 8px' : '6px 12px',
+    // 平板時 HOLD 列表表頭高度多 2px：以 padding 的垂直值 +2px 達成
+    padding: isMobile ? '4px 8px' : (isTablet ? '8px 12px' : '6px 12px'),
     fontSize: isMobile ? '1.2rem' : isTablet ? '1.5rem' : '1.7rem',
     fontWeight: 700,
     textAlign: 'center' as const,

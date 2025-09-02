@@ -22,8 +22,8 @@ export const NOTE_TEXT_LIMITS = {
   // 组合情境的字数限制（优先级最高）
   MOBILE_CELLTYPE_3: 32,    // 移动设备 + 3列模式：与 3列统一为 32 个字
   MOBILE_CELLTYPE_4: 10,    // 移动设备 + 4列模式：10个字
-  TABLET_CELLTYPE_3: 32,    // 平板设备 + 3列模式：与 3列统一为 32 个字
-  TABLET_CELLTYPE_4: 11,    // 平板设备 + 4列模式：11个字（已更新）
+  TABLET_CELLTYPE_3: 21,    // 平板 + 3列：上限 21
+  TABLET_CELLTYPE_4: 15,    // 平板 + 4列：上限 15
   
   // 特殊情境的字数限制
   COMPACT: 8,               // 紧凑模式：8个字

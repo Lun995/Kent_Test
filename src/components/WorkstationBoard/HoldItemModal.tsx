@@ -62,7 +62,10 @@ export function HoldItemModal({
         <div style={styles.content}>
           <div style={{
             ...styles.row,
-            gridTemplateColumns: showConfirmButton ? '1.2fr 3.2fr 0.8fr auto' : '1.2fr 3.2fr 1fr'
+            // 顯示按鈕：最後一欄給足最小寬度避免截斷；隱藏按鈕維持 3 欄
+            gridTemplateColumns: showConfirmButton 
+              ? '1fr 1fr 1fr minmax(220px, 1fr)'
+              : '1fr 1fr 1fr'
           }}>
             <div style={styles.tableCell}>
               {selectedItem.table.includes('內用') ? (

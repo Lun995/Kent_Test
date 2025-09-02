@@ -131,7 +131,8 @@ export default function LoginPage() {
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(5px)',
             position: 'relative',
-            marginTop: isTablet ? '80px' : '60px',
+            // 平板時往下調整 20px（80 → 100）
+            marginTop: isTablet ? '100px' : '60px',
             zIndex: 5,
             display: 'flex',
             flexDirection: 'column',

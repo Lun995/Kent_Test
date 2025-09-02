@@ -424,7 +424,8 @@ export function WorkBoard({
               }}>
                 <div style={{
                   ...styles.columnHeader,
-                  padding: '4px 2px' // 增加10px高度 (原本3px + 10px = 13px)
+                  // 僅 HOLD 欄在平板時增加 2px 高度，避免中英文高度落差
+                  padding: isTablet ? '5px 2px' : '4px 2px'
                 }}>HOLD</div>
                 {/* 合併所有Hold品項到同一張牌卡 */}
                 <div
@@ -440,7 +441,8 @@ export function WorkBoard({
                       position: 'relative',
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      height: '31px', // 設定固定高度
+                      // 僅 HOLD 欄位：平板增加 2px 高度
+                      height: isTablet ? '33px' : '31px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
