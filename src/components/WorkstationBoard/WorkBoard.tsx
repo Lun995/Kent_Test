@@ -4,6 +4,7 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import { useGlobalContext } from '../../context/GlobalContext';
 import { truncateNoteText } from '../../lib/textUtils';
 import { workBoardStyles } from '../../styles/workBoardStyles';
+import { cardItemStyles } from '../../styles/cardItemStyles';
 
 interface OrderItem {
   id: string;
@@ -49,6 +50,7 @@ export function WorkBoard({
   const { isMobile, isTablet } = useIsMobile();
   const { displayState } = useGlobalContext();
   const styles = workBoardStyles({ isMobile, isTablet });
+  const shared = cardItemStyles({ isMobile, isTablet, celltype: displayState.celltype });
 
   // 根據 celltype 決定顯示的列數
   const shouldShowThirdRow = displayState.celltype === '4';
@@ -494,7 +496,7 @@ export function WorkBoard({
                                gap: '8px'
                              }}>
                                                                                                 <div style={{ 
-                                   flex: '0 0 60%', 
+                                   flex: '0 0 65%', 
                                    textAlign: 'left',
                                    minWidth: 0,
                                    overflow: 'visible',
@@ -531,7 +533,7 @@ export function WorkBoard({
                                  display: 'flex',
                                  justifyContent: 'center',
                                  alignItems: 'center',
-                                 paddingRight: displayState.celltype === '4' ? '105px' : '80px', // 4列模式增加向右縮排25px
+                                 paddingRight: '10px', // HOLD 靠右邊線 10px
                                  alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                }}>
                                 <span style={{
@@ -636,7 +638,7 @@ export function WorkBoard({
                                     alignItems: 'flex-start',
                                     gap: '8px'
                                   }}>
-                                                                       <div style={{ 
+                                   <div style={{ 
                                      flex: '0 0 65%', 
                                      textAlign: 'left',
                                      minWidth: 0,
@@ -674,7 +676,7 @@ export function WorkBoard({
                                      display: 'flex',
                                      justifyContent: 'center',
                                      alignItems: 'center',
-                                     paddingRight: displayState.celltype === '4' ? '95px' : '60px', // 4列模式增加向右縮排25px，3列模式也減少縮排
+                                     paddingRight: '10px', // HOLD 靠右邊線 10px
                                      alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                    }}>
                                       <span style={{
@@ -820,8 +822,8 @@ export function WorkBoard({
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        paddingRight: displayState.celltype === '4' ? '95px' : '60px', // 4列模式增加向右縮排25px，3列模式也減少縮排
-                                        alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
+                                        paddingRight: displayState.celltype === '4' ? '155px' : '130px',
+                                        alignSelf: 'center'
                                       }}>
                                       <span style={{
                                         ...styles.itemBadge,
@@ -961,7 +963,7 @@ export function WorkBoard({
                                           display: 'flex',
                                           justifyContent: 'center',
                                           alignItems: 'center',
-                                          paddingRight: displayState.celltype === '4' ? '105px' : '80px', // 4列模式增加向右縮排25px
+                                          paddingRight: displayState.celltype === '4' ? '155px' : '130px', // 4列模式增加向右縮排25px
                                           alignSelf: 'center' // 確保數量標籤在整個品項區域中垂直置中
                                         }}>
                                       <span style={{

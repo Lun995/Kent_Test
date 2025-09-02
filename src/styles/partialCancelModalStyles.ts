@@ -138,9 +138,10 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     color: '#666',
     fontStyle: 'italic',
     marginTop: 2,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    // 在 HOLD 視窗中完整顯示備註內容，不截斷
+    whiteSpace: 'normal',
+    wordBreak: 'break-word' as const,
+    overflowWrap: 'break-word' as const,
     maxWidth: '100%',
   },
 

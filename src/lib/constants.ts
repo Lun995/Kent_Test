@@ -10,7 +10,7 @@ export const NOTE_TEXT_LIMITS = {
   DEFAULT: 18,
   
   // 根据显示模式的字数限制
-  CELLTYPE_3: 26,  // 3列模式：26个字
+  CELLTYPE_3: 32,  // 3列模式：32个字（每行16字，最多2行）
   CELLTYPE_4: 19,  // 4列模式：19个字（已更新）
   
   // 移动设备字数限制
@@ -20,15 +20,31 @@ export const NOTE_TEXT_LIMITS = {
   TABLET: 20,
   
   // 组合情境的字数限制（优先级最高）
-  MOBILE_CELLTYPE_3: 18,    // 移动设备 + 3列模式：18个字
+  MOBILE_CELLTYPE_3: 32,    // 移动设备 + 3列模式：与 3列统一为 32 个字
   MOBILE_CELLTYPE_4: 10,    // 移动设备 + 4列模式：10个字
-  TABLET_CELLTYPE_3: 17,    // 平板设备 + 3列模式：17个字（已更新）
+  TABLET_CELLTYPE_3: 32,    // 平板设备 + 3列模式：与 3列统一为 32 个字
   TABLET_CELLTYPE_4: 11,    // 平板设备 + 4列模式：11个字（已更新）
   
   // 特殊情境的字数限制
   COMPACT: 8,               // 紧凑模式：8个字
   SPACIOUS: 30,             // 宽松模式：30个字
 } as const;
+
+/**
+ * 品項備註換行寬度（每行字數）
+ * 需求：celltype=3 時每行 16 字
+ */
+export const NOTE_WRAP_SIZES = {
+  DEFAULT: 12,
+  CELLTYPE_3: 16,
+  CELLTYPE_4: 12,
+} as const;
+
+export function getNoteWrapSize(celltype?: '3' | '4'): number {
+  if (celltype === '3') return NOTE_WRAP_SIZES.CELLTYPE_3;
+  if (celltype === '4') return NOTE_WRAP_SIZES.CELLTYPE_4;
+  return NOTE_WRAP_SIZES.DEFAULT;
+}
 
 /**
  * 获取品项备注文字的字数限制

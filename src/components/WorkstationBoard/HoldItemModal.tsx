@@ -43,12 +43,14 @@ export function HoldItemModal({
   // 退餐邏輯
   const isTargetSnowflake = selectedItem.name === '雪花牛' && selectedItem.note === '油花少一點';
   const isChangeMeal = displayState.changeMeal === 1;
-  const returnCount = isChangeMeal && isTargetSnowflake ? -1 : 0;
+  // 牌卡 #2（通常桌號為 C2/內用C2）不顯示退餐資料
+  const isCard2 = selectedItem.table?.includes('C2');
+  const returnCount = isChangeMeal && isTargetSnowflake && !isCard2 ? -1 : 0;
   const maxEditable = Math.max(1, selectedItem.count + returnCount); // 異動數量最大值 = 原始數量 + 退餐數量（不得小於1）
 
   // 表頭統一為"HOLD"
   const modalTitle = 'HOLD';
-  const shouldAppendExtraRow = isChangeMeal && isTargetSnowflake;
+  const shouldAppendExtraRow = isChangeMeal && isTargetSnowflake && !isCard2;
 
   return createPortal(
     <div style={styles.overlay}>
