@@ -77,6 +77,11 @@ export function WorkstationSelectionModal({
     }
   }, [isOpen]);
 
+  // 檢查是否為當前工作站
+  const isCurrentWorkstation = (workstation: Workstation) => {
+    return workstation.name === currentWorkstation;
+  };
+
   const handleWorkstationSelect = (workstation: Workstation) => {
     setSelectedWorkstation(workstation);
   };
@@ -142,18 +147,26 @@ export function WorkstationSelectionModal({
                 style={{
                   ...styles.workstationItem,
                   ...(selectedWorkstation?.uid === workstation.uid && styles.selectedItem),
+                  ...(isCurrentWorkstation(workstation) && styles.currentWorkstationItem),
                   ...(workstation.isDisabled === 1 && styles.disabledItem)
                 }}
                 onClick={() => !workstation.isDisabled && handleWorkstationSelect(workstation)}
               >
-                                 <div style={styles.workstationInfo}>
-                   <div style={styles.workstationName}>{workstation.name}</div>
-                 </div>
+                {/* 目前工作站標記 */}
+                {isCurrentWorkstation(workstation) && (
+                  <div style={styles.currentWorkstationBadge}>目前</div>
+                )}
+
+                <div style={styles.workstationInfo}>
+                  <div style={styles.workstationName}>{workstation.name}</div>
+                </div>
                 
-                                 {workstation.isDefault === 1 && (
-                   <div style={styles.defaultBadge}>預設</div>
-                 )}
+                {/* 預設工作站標記 */}
+                {workstation.isDefault === 1 && !isCurrentWorkstation(workstation) && (
+                  <div style={styles.defaultBadge}>預設</div>
+                )}
                 
+                {/* 選取指示器 */}
                 {selectedWorkstation?.uid === workstation.uid && (
                   <div style={styles.selectionIndicator}>✓</div>
                 )}

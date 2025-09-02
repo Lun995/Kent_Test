@@ -163,6 +163,26 @@ export const workstationSelectionModalStyles = ({ isMobile, isTablet }: Responsi
     boxShadow: '0 2px 8px rgba(102, 126, 234, 0.4)',
   },
 
+  currentWorkstationBadge: {
+    position: 'absolute' as const,
+    top: '12px',
+    left: '12px',
+    background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+    color: '#ffffff',
+    padding: '4px 8px',
+    borderRadius: '12px',
+    fontSize: '0.7rem',
+    fontWeight: 700,
+    boxShadow: '0 2px 4px rgba(40, 167, 69, 0.3)',
+    zIndex: 1,
+  },
+
+  currentWorkstationItem: {
+    border: '2px solid #28a745',
+    background: 'linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%)',
+    boxShadow: '0 4px 16px rgba(40, 167, 69, 0.2)',
+  },
+
   loadingContainer: {
     display: 'flex',
     flexDirection: 'column' as const,
