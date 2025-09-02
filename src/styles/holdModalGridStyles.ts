@@ -160,3 +160,8 @@ export const getResponsiveGridTemplate = (isMobile: boolean, isTablet: boolean) 
   if (isTablet) return gridTemplates.holdCompact;
   return gridTemplates.holdStandard;
 };
+
+
+
+
+

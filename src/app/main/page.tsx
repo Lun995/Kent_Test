@@ -9,12 +9,18 @@ import {
   BackupScreen 
 } from '../../components/WorkstationBoard';
 import { HoldItemModal } from '../../components/WorkstationBoard/HoldItemModal';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import { 
+  useIsMobile,
+  useWorkstationManagement,
+  useItemSelection,
+  useAutoReplenishment,
+  type Workstation,
+  type OrderItem,
+  type CategoryItems
+} from '../../hooks';
 import { 
   testCardData, 
   convertTestCardDataToCategoryItems,
-  OrderItem, 
-  CategoryItems, 
   CardData, 
   CardStatus 
 } from '../../lib/test-card-data';
@@ -25,51 +31,7 @@ import { mainPageStyles } from '../../styles/mainPageStyles';
 
 
 
-// 工作站介面 - 更新為符合 KDS API 規格 aa
-interface Workstation {
-  uid: number;
-  no: string;
-  name: string;
-  brandId: number;
-  storeId: number;
-  isOn: number;
-  serialNo: number;
-  memo: string;
-  creatorId: number;
-  createDate: string;
-  modifyId: number;
-  modifyDate: string;
-  isDisabled: number;
-  status: number;
-  companyId: number;
-  isDefault: number;
-  isAutoTimeOn: number;
-  isAutoOrderOn: number;
-  isAutoProductTypeOn: number;
-  isAutoProductOn: number;
-  kdsDiningType: number;
-  kdsStoreArea: number;
-  kdsDisplayTypeId: number;
-  isNoDisplay: number;
-  isOvertimeNotify: number;
-  isCookingNotify: number;
-  isMealSound: number;
-  isUrgingSound: number;
-  overtimeNotifyMin: number;
-  cookingNotifyMin: number;
-  isAllProduct: number;
-  progressiveTypeId: number;
-  autoTimeOnMin: number;
-  autoOrderOnQty: number;
-  nextWorkstationId: number;
-  isFirstStation: number;
-  isGoOn: number;
-  prevWorkstationId: number | null;
-  dineOver: number;
-  taskTime: number;
-  displayType: number;
-  cardType: number;
-}
+// 工作站介面已移至 useWorkstationManagement Hook
 
 export default function WorkstationBoard() {
   const { isMobile, isTablet } = useIsMobile();
@@ -82,313 +44,57 @@ export default function WorkstationBoard() {
     convertTestCardDataToCategoryItems(testCardData)
   );
 
+  // 使用自定義 Hooks
+  const {
+    workstations,
+    isLoadingWorkstations,
+    workstationError,
+    currentWorkstation,
+    changeWorkstation
+  } = useWorkstationManagement(1); // 預設 storeId = 1
 
-  // 製作中品項點擊特效狀態管理
-  const [selectedMakingItem, setSelectedMakingItem] = useState<string | null>(null);
-  const [clickedMakingItems, setClickedMakingItems] = useState<Set<string>>(new Set());
+  const {
+    selectedMakingItem,
+    clickedMakingItems,
+    selectedHoldItem,
+    clickedHoldItems,
+    handleMakingItemSelect,
+    handleHoldItemSelect,
+    clearAllSelections,
+    setSelectedMakingItem,
+    setSelectedHoldItem,
+    setClickedMakingItems,
+    setClickedHoldItems
+  } = useItemSelection();
 
-  // Hold品項點擊特效狀態管理
-  const [selectedHoldItem, setSelectedHoldItem] = useState<string | null>(null);
-  const [clickedHoldItems, setClickedHoldItems] = useState<Set<string>>(new Set());
-
-  // 製作中品項點擊處理函數
-  const handleMakingItemSelect = (itemId: string) => {
-    console.log('handleMakingItemSelect called with:', itemId);
-    
-    // 檢查品項是否已經被點擊過
-    if (clickedMakingItems.has(itemId)) {
-      // 如果已經被點擊過，則取消選中（反白）
-      setClickedMakingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemId);
-        return newSet;
-      });
-      setSelectedMakingItem(null);
-      // 清除選中狀態
-      console.log('製作中品項已取消選中:', itemId);
-    } else {
-      // 如果沒有被點擊過，則選中（反灰）
-      setClickedMakingItems(prev => new Set([...prev, itemId]));
-      setSelectedMakingItem(itemId);
-      // 設置選中狀態
-      console.log('製作中品項已選中:', itemId);
-    }
-    
-    // 清除Hold品項的選中狀態
-    setSelectedHoldItem(null);
-  };
-
-  // Hold品項點擊處理函數
-  const handleHoldItemSelect = (itemId: string) => {
-    console.log('handleHoldItemSelect called with:', itemId);
-    console.log('Current categoryItems.hold:', categoryItems.hold);
-    
-    // 檢查品項是否已經被點擊過
-    if (clickedHoldItems.has(itemId)) {
-      // 如果已經被點擊過，則取消選中（反白）
-      setClickedHoldItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemId);
-        return newSet;
-      });
-      setSelectedHoldItem(null);
-      console.log('Hold品項已取消選中:', itemId);
-    } else {
-      // 如果沒有被點擊過，則選中（反灰）
-      setClickedHoldItems(prev => new Set([...prev, itemId]));
-      setSelectedHoldItem(itemId);
-      console.log('Hold品項已選中:', itemId);
-    }
-    
-    // 清除製作中品項的選中狀態
-    setSelectedMakingItem(null);
-  };
+  // 品項點擊處理函數已移至 useItemSelection Hook
 
   // 牌卡管理狀態
   const [hiddenMakingCards, setHiddenMakingCards] = useState<Set<string>>(new Set());
   const [hiddenHoldCards, setHiddenHoldCards] = useState<Set<string>>(new Set());
 
-  // 重新計算逾時特效函數
-  const recalculateTimeoutEffect = () => {
-    // 重置逾時特效狀態，讓新遞補的品項從綠色開始
-    setTimeColor('#009944');
-    setStartTime(Date.now());
-    console.log('逾時特效重新計算：重置為綠色狀態');
-    
-    // 10秒後變為紅色（逾時狀態）
-    setTimeout(() => {
-      setTimeColor('#d7263d');
-      console.log('遞補品項已逾時：變為紅色狀態');
-    }, 10000); // 10秒 = 10000毫秒
-  };
-
-  // 強制遞補函數：當製作中沒有可見牌卡時自動遞補
-  const forceAutoReplenish = () => {
-    setCategoryItems(prev => {
-      // 檢查製作中是否有可見的牌卡
-      const visibleMakingCards = Object.keys(prev.making.reduce((acc, item) => {
-        const key = item.table;
-        if (!acc[key]) {
-          acc[key] = [];
-        }
-        acc[key].push(item);
-        return acc;
-      }, {} as Record<string, OrderItem[]>)).filter(tableName => {
-        const cardKey = `making-${tableName}`;
-        return !hiddenMakingCards.has(cardKey);
-      });
-      
-      console.log('強制遞補檢查：', {
-        visibleMakingCards,
-        hiddenMakingCards: Array.from(hiddenMakingCards),
-        waitingLength: prev.waiting.length
-      });
-      
-      // 如果沒有可見的製作中牌卡，且有待製作品項，則自動遞補
-      if (visibleMakingCards.length === 0 && prev.waiting.length > 0) {
-        const newMaking = [...prev.making];
-        const newWaiting = [...prev.waiting];
-        
-        // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
-        const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
-        let nextTableToMove = null;
-        
-        // 找到優先級最高的待製作牌卡
-        for (const priorityTable of priorityOrder) {
-          const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
-          if (hasPriorityTable) {
-            nextTableToMove = priorityTable;
-            break;
-          }
-        }
-        
-        // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
-        if (!nextTableToMove && newWaiting.length > 0) {
-          nextTableToMove = newWaiting[0]?.table;
-        }
-        
-        if (nextTableToMove) {
-          const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
-          
-          console.log('準備移動品項：', { nextTableToMove, itemsToMove });
-          
-          // 移動品項到製作中
-          const moveTimestamp = Date.now();
-          itemsToMove.forEach((item, index) => {
-            const movedItem = {
-              ...item,
-              id: `force-moved-${moveTimestamp}-${index}`
-            };
-            newMaking.push(movedItem);
-          });
-          
-          // 從待製作中移除
-          const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
-          newWaiting.length = 0;
-          newWaiting.push(...remainingWaiting);
-          
-          console.log('強制遞補完成：待製作品項已移動到製作中');
-          
-          // 遞補完成後，清除隱藏的牌卡狀態，讓新遞補的牌卡可以正常顯示
-          setTimeout(() => {
-            setHiddenMakingCards(new Set());
-            console.log('遞補完成：隱藏牌卡狀態已清除');
-            
-            // 為遞補的品項重新計算逾時特效
-            // 延遲200ms確保狀態更新完成後再觸發
-            setTimeout(() => {
-              recalculateTimeoutEffect();
-            }, 200);
-          }, 50);
-        }
-        
-        return {
-          ...prev,
-          making: newMaking,
-          waiting: newWaiting
-        };
-      }
-      return prev;
-    });
-  };
-
-  // 雙擊牌卡表頭處理函數
-  const handleCardHeaderDoubleClick = (cardType: 'making' | 'hold', cardKey: string) => {
-    if (cardType === 'making') {
-      setHiddenMakingCards(prev => new Set([...prev, cardKey]));
-      
-      // 當製作中牌卡消失後，將待製作的品項替補到製作中
-      setCategoryItems(prev => {
-        const newMaking = [...prev.making];
-        const newWaiting = [...prev.waiting];
-        
-        // 找到被隱藏的製作中牌卡對應的品項
-        const hiddenTableName = cardKey.replace('making-', '');
-        const hiddenItems = newMaking.filter(item => item.table === hiddenTableName);
-        
-        if (hiddenItems.length > 0 && newWaiting.length > 0) {
-          // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
-          const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
-          let nextTableToMove = null;
-          
-          // 找到優先級最高的待製作牌卡
-          for (const priorityTable of priorityOrder) {
-            const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
-            if (hasPriorityTable) {
-              nextTableToMove = priorityTable;
-              break;
-            }
-          }
-          
-          // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
-          if (!nextTableToMove && newWaiting.length > 0) {
-            nextTableToMove = newWaiting[0]?.table;
-          }
-          
-          if (nextTableToMove) {
-            // 找到同一桌號的所有品項
-            const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
-            
-            // 將這些品項一起移動到製作中，並確保它們保持在同一張牌卡中
-            // 為所有移動的品項使用相同的時間戳，確保它們被分組到同一張牌卡
-            const moveTimestamp = Date.now();
-            itemsToMove.forEach((item, index) => {
-              const movedItem = {
-                ...item,
-                // 使用相同的時間戳，讓它們在製作中保持在同一張牌卡
-                id: `moved-${moveTimestamp}-${index}`
-              };
-              newMaking.push(movedItem);
-            });
-            
-            // 從待製作中移除這些品項
-            const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
-            newWaiting.length = 0; // 清空原陣列
-            newWaiting.push(...remainingWaiting); // 重新填充
-          }
-        }
-        
-        return {
-          ...prev,
-          making: newMaking,
-          waiting: newWaiting
-        };
-      });
-      
-      // 檢查製作中是否還有品項，如果沒有則自動遞補
-      setTimeout(() => {
-        setCategoryItems(prev => {
-          // 如果製作中沒有品項，自動從待製作中遞補
-          if (prev.making.length === 0 && prev.waiting.length > 0) {
-            const newMaking = [...prev.making];
-            const newWaiting = [...prev.waiting];
-            
-            // 按優先級順序遞補：C1 > C2 > C3 > C4 > 其他
-            const priorityOrder = ['C1', 'C2', 'C3', 'C4'];
-            let nextTableToMove = null;
-            
-            // 找到優先級最高的待製作牌卡
-            for (const priorityTable of priorityOrder) {
-              const hasPriorityTable = newWaiting.some(item => item.table === priorityTable);
-              if (hasPriorityTable) {
-                nextTableToMove = priorityTable;
-                break;
-              }
-            }
-            
-            // 如果沒有找到優先級牌卡，使用第一個待製作牌卡
-            if (!nextTableToMove && newWaiting.length > 0) {
-              nextTableToMove = newWaiting[0]?.table;
-            }
-            
-            if (nextTableToMove) {
-              const itemsToMove = newWaiting.filter(item => item.table === nextTableToMove);
-              
-              // 移動品項到製作中
-              const moveTimestamp = Date.now();
-              itemsToMove.forEach((item, index) => {
-                const movedItem = {
-                  ...item,
-                  id: `auto-moved-${moveTimestamp}-${index}`
-                };
-                newMaking.push(movedItem);
-              });
-              
-              // 從待製作中移除
-              const remainingWaiting = newWaiting.filter(item => item.table !== nextTableToMove);
-              newWaiting.length = 0;
-              newWaiting.push(...remainingWaiting);
-              
-              console.log('自動遞補：待製品項已移動到製作中');
-            }
-            
-            return {
-              ...prev,
-              making: newMaking,
-              waiting: newWaiting
-            };
-          }
-          return prev;
-        });
-        
-        // 強制檢查並遞補
-        forceAutoReplenish();
-        
-        // 遞補完成後重新計算逾時特效
-        setTimeout(() => {
-          recalculateTimeoutEffect();
-        }, 300); // 延遲300ms確保遞補完成
-      }, 100); // 延遲100ms確保狀態更新完成
-      
-    } else if (cardType === 'hold') {
-      // 隱藏Hold牌卡
-      setHiddenHoldCards(prev => new Set([...prev, 'hold-main']));
-      console.log('Hold牌卡已被隱藏');
-      
-      // 可以選擇是否要將Hold品項移動回待製作或製作中
-      // 這裡暫時只是隱藏，品項仍然保留在Hold狀態
+  // 使用自動遞補 Hook
+  const {
+    forceAutoReplenish,
+    handleCardHeaderDoubleClick,
+    recalculateTimeoutEffect: recalculateTimeoutEffectFromHook
+  } = useAutoReplenishment(
+    categoryItems,
+    setCategoryItems,
+    hiddenMakingCards,
+    setHiddenMakingCards,
+    hiddenHoldCards,
+    setHiddenHoldCards,
+    () => {
+      // 逾時特效重新計算的回調函數
+      setTimeColor('#009944');
+      setStartTime(Date.now());
     }
-  };
+  );
+
+  // 逾時特效和自動遞補邏輯已移至 useAutoReplenishment Hook
+
+  // 雙擊牌卡表頭處理函數已移至 useAutoReplenishment Hook
 
   // 處理選中品項的Hold操作
   const handleHoldSelectedItem = () => {
@@ -448,8 +154,7 @@ export default function WorkstationBoard() {
   // 新增：備餐總數畫面狀態
   const [showBackupScreen, setShowBackupScreen] = useState(false);
 
-  // 新增：當前選擇的工作站
-  const [currentWorkstation, setCurrentWorkstation] = useState('');
+  // 當前選擇的工作站已移至 useWorkstationManagement Hook
   
   // 新增：選取品項提示 modal 狀態
   const [showSelectItemModal, setShowSelectItemModal] = useState(false);
@@ -461,44 +166,7 @@ export default function WorkstationBoard() {
   // 新增：HOLD視窗數量編輯狀態
   const [holdItemEditCount, setHoldItemEditCount] = useState<number>(0);
 
-  // 新增：工作站清單狀態
-  const [workstations, setWorkstations] = useState<Workstation[]>([]);
-  const [isLoadingWorkstations, setIsLoadingWorkstations] = useState(false);
-  const [workstationError, setWorkstationError] = useState<string | null>(null);
-
-  // 獲取工作站清單的函數
-  const fetchWorkstations = async (storeId: number) => {
-    try {
-      setIsLoadingWorkstations(true);
-      setWorkstationError(null);
-      
-      const response = await fetch(`/api/main?storeId=${storeId}`);
-      const result = await response.json();
-      
-      if (result.code === '0000' && result.data) {
-        setWorkstations(result.data);
-        // 如果有工作站資料，設定第一個為預設選擇
-        if (result.data.length > 0) {
-          setCurrentWorkstation(result.data[0].name);
-        }
-      } else {
-        setWorkstationError(result.message || '獲取工作站清單失敗');
-      }
-    } catch (error) {
-      console.error('獲取工作站清單錯誤:', error);
-      setWorkstationError('網路錯誤，無法獲取工作站清單');
-    } finally {
-      setIsLoadingWorkstations(false);
-    }
-  };
-
-  // 頁面載入時獲取工作站清單
-  useEffect(() => {
-    // 這裡可以從環境變數、localStorage 或其他地方獲取 storeId
-    // 暫時使用預設值 1
-    const storeId = 1;
-    fetchWorkstations(storeId);
-  }, []);
+  // 工作站管理已移至 useWorkstationManagement Hook
 
      // 監聽製作中品項變化，當沒有品項時自動觸發遞補
    useEffect(() => {
@@ -651,7 +319,7 @@ export default function WorkstationBoard() {
   };
 
   const handleWorkstationChange = (station: string) => {
-    setCurrentWorkstation(station);
+    changeWorkstation(station);
   };
 
   const handleSettings = () => {
