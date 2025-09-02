@@ -10,6 +10,7 @@ export const countdownButtonStyles = ({ isMobile, isTablet }: ResponsiveProps) =
     fontSize: isMobile ? '0.8rem' : isTablet ? '1.0rem' : '1.2rem',
     fontWeight: 700,
     margin: '0',
+    marginTop: '8px', // 調整上方縮排，與其他按鈕保持一致
     padding: '4px',
     boxSizing: 'border-box' as const,
     overflow: 'visible',
@@ -31,7 +32,7 @@ export const countdownButtonStyles = ({ isMobile, isTablet }: ResponsiveProps) =
   },
 
   countdownText: {
-    fontSize: isMobile ? '0.9rem' : isTablet ? '1.1rem' : '1.3rem',
+    fontSize: isMobile ? '0.9rem' : isTablet ? '1.7rem' : '1.3rem',
     fontWeight: 700,
     color: '#495057'
   },

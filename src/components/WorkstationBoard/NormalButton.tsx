@@ -42,6 +42,20 @@ export function NormalButton({
           e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
         }
       }}
+      onMouseDown={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = 'scale(0.95)';
+          e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.4)';
+          e.currentTarget.style.backgroundColor = '#d1ecf1';
+        }
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = 'scale(1.02)';
+          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          e.currentTarget.style.backgroundColor = '#e9ecef';
+        }
+      }}
     >
       {children}
     </Button>

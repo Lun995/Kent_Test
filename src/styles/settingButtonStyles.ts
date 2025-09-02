@@ -36,11 +36,12 @@ export const settingButtonStyles = ({ isMobile, isTablet, variant }: ResponsiveP
     zIndex: variant === 'setting' ? 10000 : 1,
     position: 'relative' as const,
     ...(variant === 'workstation' && {
-      borderTop: '2px solid #222',
-      borderBottom: '2px solid #222',
+      borderTop: '2px solid #222', // 保持工作站按鈕的上邊線
+      borderBottom: 'none', // 移除工作站按鈕的下邊線
     }),
     ...(variant === 'setting' && {
-      borderBottom: '2px solid #222',
+      borderTop: '2px solid #222', // 保持設定按鈕的上邊線
+      borderBottom: isTablet ? '4px solid #696969' : 'none', // iPad模式下補上下邊線，其他模式移除下邊線
       boxShadow: 'none',
     }),
   },

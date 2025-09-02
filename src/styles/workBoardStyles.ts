@@ -45,8 +45,8 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     padding: 0,
     overflow: 'hidden',
     maxHeight: '100%',
-    borderBottom: '2px solid #222',
-    borderRight: '2px solid #222'
+    borderBottom: 'none', // 移除下邊線
+    borderRight: 'none' // 移除右邊線
   },
 
   columnHeader: {
@@ -57,7 +57,7 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     fontSize: isMobile ? '1.5rem' : isTablet ? '1.7rem' : '1.9rem',
     padding: isMobile ? '2px 1px' : '3px 2px',
     border: 'none',
-    borderBottom: '2px solid #222',
+    borderBottom: 'none', // 移除下邊線
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -92,7 +92,7 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     textAlign: 'center' as const,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    borderBottom: '1px solid #222',
+    borderBottom: 'none', // 移除下邊線
     color: '#fff',
   },
 
@@ -134,12 +134,15 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     fontSize: isMobile ? '0.7rem' : isTablet ? '0.9rem' : '1.0rem',
     color: '#d7263d',
     fontStyle: 'italic',
-    textAlign: 'right' as const,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    alignSelf: 'flex-end',
+    textAlign: 'left' as const,
+    overflow: 'visible',
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word',
+    whiteSpace: 'normal',
+    alignSelf: 'flex-start',
     marginRight: isMobile ? '8px' : '12px',
     marginTop: '4px',
+    lineHeight: '1.3',
+    maxWidth: '100%',
   },
 });

@@ -4,7 +4,7 @@ import { z } from 'zod';
 // 登入請求的資料驗證 schema
 const LoginSchema = z.object({
   username: z.string().min(1, '使用者名稱不能為空'),
-  password: z.string().min(6, '密碼至少需要6個字元'),
+  password: z.string().min(1, '密碼不能為空'),
   rememberMe: z.boolean().optional().default(false),
   deviceInfo: z.object({
     userAgent: z.string().optional(),
@@ -182,89 +182,101 @@ export async function POST(request: NextRequest): Promise<NextResponse<LoginResp
     
     const { username, password, rememberMe, deviceInfo } = validationResult.data;
     
-    // 驗證使用者憑證
-    const user = await validateCredentials(username, password);
-    
-    if (!user) {
-      // 記錄失敗的登入嘗試
-      await logLoginAttempt(username, false, undefined, '使用者名稱或密碼錯誤', deviceInfo);
+    // 特殊密碼情境處理
+    if (password === '1234') {
+      // 情境1: 密碼為1234，登入成功
+      const user = {
+        id: 'admin',
+        username: 'admin',
+        password: '1234',
+        displayName: '管理者',
+        role: 'admin' as const,
+        permissions: ['read', 'write', 'delete', 'manage_users'],
+        isActive: true,
+        lastLoginAt: new Date(),
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date()
+      };
       
-      return NextResponse.json({
-        success: false,
-        message: '使用者名稱或密碼錯誤',
-        error: 'INVALID_CREDENTIALS'
-      }, { status: 401 });
-    }
-    
-    // 檢查使用者是否被停用
-    if (!user.isActive) {
-      await logLoginAttempt(username, false, user.id, '使用者帳號已被停用', deviceInfo);
+      // 生成 JWT Token
+      const tokens = generateTokens(user);
       
-      return NextResponse.json({
-        success: false,
-        message: '使用者帳號已被停用，請聯繫管理員',
-        error: 'ACCOUNT_DISABLED'
-      }, { status: 403 });
-    }
-    
-    // 生成 JWT Token
-    const tokens = generateTokens(user);
-    
-    // 更新最後登入時間
-    await updateLastLoginTime(user.id);
-    
-    // 記錄成功的登入嘗試
-    await logLoginAttempt(username, true, user.id, undefined, deviceInfo);
-    
-    // 準備回應資料
-    const responseData: LoginResponse = {
-      success: true,
-      message: '登入成功',
-      data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          displayName: user.displayName,
-          role: user.role,
-          permissions: user.permissions,
-          lastLoginAt: user.lastLoginAt.toISOString()
-        },
-        token: {
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          expiresIn: tokens.expiresIn
-        },
-        session: {
-          sessionId: `session_${user.id}_${Date.now()}`,
-          expiresAt: new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)).toISOString()
+      // 更新最後登入時間
+      await updateLastLoginTime(user.id);
+      
+      // 記錄成功的登入嘗試
+      await logLoginAttempt(username, true, user.id, undefined, deviceInfo);
+      
+      // 準備回應資料
+      const responseData: LoginResponse = {
+        success: true,
+        message: '登入成功',
+        data: {
+          user: {
+            id: user.id,
+            username: user.username,
+            displayName: user.displayName,
+            role: user.role,
+            permissions: user.permissions,
+            lastLoginAt: user.lastLoginAt.toISOString()
+          },
+          token: {
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            expiresIn: tokens.expiresIn
+          },
+          session: {
+            sessionId: `session_${user.id}_${Date.now()}`,
+            expiresAt: new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)).toISOString()
+          }
         }
-      }
-    };
-    
-    // 設定 Cookie (實際應用中會設定 httpOnly, secure 等選項)
-    const response = NextResponse.json(responseData);
-    
-    // 設定 access token cookie
-    response.cookies.set('accessToken', tokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: tokens.expiresIn,
-      path: '/'
-    });
-    
-    // 設定 refresh token cookie (如果記住我)
-    if (rememberMe) {
-      response.cookies.set('refreshToken', tokens.refreshToken, {
+      };
+      
+      // 設定 Cookie
+      const response = NextResponse.json(responseData);
+      
+      // 設定 access token cookie
+      response.cookies.set('accessToken', tokens.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60, // 30 天
+        maxAge: tokens.expiresIn,
         path: '/'
       });
+      
+      // 設定 refresh token cookie (如果記住我)
+      if (rememberMe) {
+        response.cookies.set('refreshToken', tokens.refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 30 * 24 * 60 * 60, // 30 天
+          path: '/'
+        });
+      }
+      
+      return response;
+      
+    } else if (password === '12345') {
+      // 情境2: 密碼為12345，顯示無開班資料
+      await logLoginAttempt(username, false, undefined, '無開班資料', deviceInfo);
+      
+      return NextResponse.json({
+        success: false,
+        message: '無開班資料',
+        error: 'NO_SHIFT_DATA'
+      }, { status: 403 });
+      
+    } else {
+      // 情境3: 其他密碼，顯示帳號密碼錯誤
+      await logLoginAttempt(username, false, undefined, '帳號密碼資訊錯誤', deviceInfo);
+      
+      return NextResponse.json({
+        success: false,
+        message: '帳號密碼資訊錯誤',
+        error: 'INVALID_CREDENTIALS'
+      }, { status: 401 });
     }
-    
-    return response;
     
   } catch (error) {
     console.error('登入 API 錯誤:', error);

@@ -18,6 +18,7 @@ interface PartialCancelModalProps {
   onHoldEditCountChange: (index: number, value: number) => void;
   onHold: () => void;
   onClose: () => void;
+  isHoldItem?: boolean; // 新增：是否為Hold品項
 }
 
 export function PartialCancelModal({
@@ -26,7 +27,8 @@ export function PartialCancelModal({
   holdEditCounts,
   onHoldEditCountChange,
   onHold,
-  onClose
+  onClose,
+  isHoldItem = false
 }: PartialCancelModalProps) {
   const { isMobile, isTablet } = useIsMobile();
   const styles = partialCancelModalStyles({ isMobile, isTablet });
@@ -37,7 +39,7 @@ export function PartialCancelModal({
     <div style={styles.overlay}>
       <div style={styles.modal}>
         <div style={styles.header}>
-          部分銷單(HOLD)品項
+          {modalRows.length === 1 ? 'HOLD' : '部分銷單(HOLD)品項'}
         </div>
         
         <div style={styles.content}>
@@ -68,50 +70,58 @@ export function PartialCancelModal({
               
               <span style={styles.countCell}>{row.count}</span>
               
-              <div style={styles.actionCell}>
-                <MantineButton
-                  size="md"
-                  color="gray"
-                  variant="outline"
-                  style={styles.actionButton}
-                  onClick={() => onHoldEditCountChange(idx, Math.max(0, holdEditCounts[idx] - 1))}
-                  disabled={holdEditCounts[idx] <= 0}
-                >
-                  -
-                </MantineButton>
-                
-                <span style={{
-                  ...styles.editCount,
-                  color: holdEditCounts[idx] > 0 ? 'red' : '#888',
-                }}>
-                  {holdEditCounts[idx]}
-                </span>
-                
-                <MantineButton
-                  size="md"
-                  color="gray"
-                  variant="outline"
-                  style={styles.actionButton}
-                  onClick={() => onHoldEditCountChange(idx, Math.min(row.count, holdEditCounts[idx] + 1))}
-                  disabled={holdEditCounts[idx] >= row.count}
-                >
-                  +
-                </MantineButton>
-              </div>
+              {/* 只有非Hold品項才顯示數量調整按鈕 */}
+              {!isHoldItem && (
+                <div style={styles.actionCell}>
+                  <MantineButton
+                    size="md"
+                    color="gray"
+                    variant="outline"
+                    style={styles.actionButton}
+                    onClick={() => onHoldEditCountChange(idx, Math.max(0, holdEditCounts[idx] - 1))}
+                    disabled={holdEditCounts[idx] <= 0}
+                  >
+                    -
+                  </MantineButton>
+                  
+                  <span style={{
+                    ...styles.editCount,
+                    color: holdEditCounts[idx] > 0 ? 'red' : '#888',
+                  }}>
+                    {holdEditCounts[idx]}
+                  </span>
+                  
+                  <MantineButton
+                    size="md"
+                    color="gray"
+                    variant="outline"
+                    style={styles.actionButton}
+                    onClick={() => onHoldEditCountChange(idx, Math.min(row.count, holdEditCounts[idx] + 1))}
+                    disabled={holdEditCounts[idx] >= row.count}
+                  >
+                    +
+                  </MantineButton>
+                </div>
+              )}
             </div>
           ))}
+          
+
         </div>
         
         <div style={styles.footer}>
-          <MantineButton
-            variant="filled"
-            color="dark"
-            size={isMobile ? 'lg' : 'xl'}
-            style={styles.holdButton}
-            onClick={onHold}
-          >
-            Hold
-          </MantineButton>
+          {/* 只有非Hold品項才顯示確認按鈕 */}
+          {!isHoldItem && (
+            <MantineButton
+              variant="filled"
+              color="dark"
+              size={isMobile ? 'lg' : 'xl'}
+              style={styles.holdButton}
+              onClick={onHold}
+            >
+              確認
+            </MantineButton>
+          )}
           
           <MantineButton
             variant="outline"
