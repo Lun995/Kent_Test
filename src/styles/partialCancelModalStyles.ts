@@ -169,9 +169,20 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     marginRight: 8,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: isMobile ? '1rem' : '1.2rem',
-    fontWeight: 700
+    fontSize: isMobile ? '1.8rem' : isTablet ? '2.0rem' : '2.2rem',
+    fontWeight: 700,
+    whiteSpace: 'nowrap'
+  },
+
+  maxButton: {
+    minWidth: isMobile ? 36 : 44,
+    padding: '10px 14px',
+    marginRight: 8,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    fontSize: isMobile ? '1.1rem' : isTablet ? '1.3rem' : '1.5rem',
+    fontWeight: 700,
+    whiteSpace: 'nowrap'
   },
 
   editCount: {

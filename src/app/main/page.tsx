@@ -18,6 +18,7 @@ import {
   type OrderItem,
   type CategoryItems
 } from '../../hooks';
+import { useGlobalContext } from '../../context/GlobalContext';
 import { 
   testCardData, 
   convertTestCardDataToCategoryItems,
@@ -35,14 +36,18 @@ import { mainPageStyles } from '../../styles/mainPageStyles';
 
 export default function WorkstationBoard() {
   const { isMobile, isTablet } = useIsMobile();
+  const { displayState, displayDispatch } = useGlobalContext();
 
   const styles = mainPageStyles({ isMobile, isTablet });
   
   // 狀態管理
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [categoryItems, setCategoryItems] = useState<CategoryItems>(() => 
-    convertTestCardDataToCategoryItems(testCardData)
-  );
+  const [categoryItems, setCategoryItems] = useState<CategoryItems>(() => {
+    const convertedData = convertTestCardDataToCategoryItems(testCardData);
+    console.log('初始化 categoryItems:', convertedData);
+    console.log('testCardData:', testCardData);
+    return convertedData;
+  });
 
   // 使用自定義 Hooks
   const {
@@ -66,6 +71,8 @@ export default function WorkstationBoard() {
     setClickedMakingItems,
     setClickedHoldItems
   } = useItemSelection();
+
+
 
   // 品項點擊處理函數已移至 useItemSelection Hook
 
@@ -106,15 +113,17 @@ export default function WorkstationBoard() {
       // 查找對應的製作中品項
       const makingItem = categoryItems.making.find(item => item.id === selectedMakingItem);
       
-             if (makingItem) {
-         // 設置Hold品項視窗數據，顯示製作中品項的明細
-         setSelectedHoldItemData(makingItem);
-         setShowHoldItemModal(true);
-         // 初始化數量編輯狀態為1（不得為0）
-         setHoldItemEditCount(1);
-         // 設置為確認狀態（顯示確認按鈕）
-         console.log('Hold Item Modal opened with making item:', makingItem);
-       } else {
+                     if (makingItem) {
+          // 設置Hold品項視窗數據，顯示製作中品項的明細
+          setSelectedHoldItemData(makingItem);
+          setShowHoldItemModal(true);
+          // 初始化數量編輯狀態為1（不得為0）
+          setHoldItemEditCount(1);
+          // 設置為確認狀態（顯示確認按鈕）
+          // 重置status為0，表示正常狀態
+          displayDispatch({ type: 'SET_STATUS', payload: 0 });
+          console.log('Hold Item Modal opened with making item:', makingItem);
+        } else {
         console.log('No matching makingItem found');
         setShowSelectItemModal(true);
       }
@@ -130,6 +139,8 @@ export default function WorkstationBoard() {
         setShowHoldItemModal(true);
         // Hold品項不需要數量編輯，所以不設置holdModalMode
         setHoldItemEditCount(0);
+        // 設置status為2，表示HOLD狀態
+        displayDispatch({ type: 'SET_STATUS', payload: 2 });
         console.log('Hold Item Modal opened with hold item:', holdItem);
       } else {
         console.log('No matching holdItem found');
@@ -343,9 +354,22 @@ export default function WorkstationBoard() {
     if (selectedHoldItemData) {
       console.log('HOLD confirmed for item:', selectedHoldItemData, 'with count:', holdItemEditCount);
       
+      // 計算退餐數量（如果有退餐邏輯）
+      const isTargetSnowflake = selectedHoldItemData.name === '雪花牛' && selectedHoldItemData.note === '油花少一點';
+      const isChangeMeal = displayState.changeMeal === 1;
+      const returnCount = isChangeMeal && isTargetSnowflake ? -1 : 0;
+      
+      // 計算最大可編輯數量（原始數量 + 退餐數量，不得小於1）
+      const maxEditable = Math.max(1, selectedHoldItemData.count + returnCount);
+      
       // 計算要扣除的數量（原始數量 - 異動後的數量）
       const holdCount = holdItemEditCount;
       const remainingCount = selectedHoldItemData.count - holdCount;
+      
+      // 檢查是否品項完成：異動數量等於原始數量扣除退餐數量後的值
+      // 退餐情況：原始數量扣除退餐數量 = 原始數量 + returnCount (returnCount為負數)
+      const adjustedOriginalCount = selectedHoldItemData.count + returnCount;
+      const isItemCompleted = holdCount === adjustedOriginalCount;
       
       if (remainingCount < 0) {
         console.error('Invalid hold count: cannot hold more than available');
@@ -390,14 +414,25 @@ export default function WorkstationBoard() {
       
       // 如果是製作中品項，需要扣除數量
       if (selectedMakingItem) {
-        setCategoryItems(prev => ({
-          ...prev,
-          making: prev.making.map(item => 
-            item.id === selectedHoldItemData.id 
-              ? { ...item, count: remainingCount }
-              : item
-          ).filter(item => item.count > 0) // 過濾數量為0的品項
-        }));
+        // 檢查是否HOLD數量等於最大數量（品項完全轉移至HOLD）
+        if (holdCount === maxEditable) {
+          // 品項完全轉移至HOLD，從製作中移除
+          console.log('品項完全轉移至HOLD，從製作中移除:', selectedHoldItemData.id);
+          setCategoryItems(prev => ({
+            ...prev,
+            making: prev.making.filter(item => item.id !== selectedHoldItemData.id)
+          }));
+        } else {
+          // 部分轉移，更新製作中數量
+          setCategoryItems(prev => ({
+            ...prev,
+            making: prev.making.map(item => 
+              item.id === selectedHoldItemData.id 
+                ? { ...item, count: remainingCount }
+                : item
+            ).filter(item => item.count > 0) // 過濾數量為0的品項
+          }));
+        }
       }
       
       // 關閉視窗並重置狀態
@@ -411,8 +446,15 @@ export default function WorkstationBoard() {
       setClickedMakingItems(new Set());
       setClickedHoldItems(new Set());
       
-      console.log('Item added to HOLD:', newHoldItem);
-      console.log('Remaining count in making:', remainingCount);
+      console.log('Item processed:', selectedHoldItemData);
+      console.log('Return count (退餐數量):', returnCount);
+      console.log('Adjusted original count (調整後原始數量):', adjustedOriginalCount);
+      console.log('Max editable (最大可編輯數量):', maxEditable);
+      console.log('Hold count (異動數量):', holdCount);
+      console.log('Is item completed (品項是否完成):', isItemCompleted);
+      console.log('Is fully transferred to HOLD (是否完全轉移至HOLD):', holdCount === maxEditable);
+      console.log('Remaining count in making (製作中剩餘數量):', remainingCount);
+      console.log('Item added to HOLD list (品項已加入HOLD列表)');
     }
   };
 

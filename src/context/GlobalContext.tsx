@@ -17,10 +17,11 @@ interface UserAction {
 interface DisplayState {
     celltype: '3' | '4'; // 3列或4列
     changeMeal: number;  // 0/1，預設0
+    status: number;      // 0/1/2，預設0，2表示HOLD狀態
 }
 
 interface DisplayAction {
-    type: 'SET_CELLTYPE' | 'SET_CHANGE_MEAL';
+    type: 'SET_CELLTYPE' | 'SET_CHANGE_MEAL' | 'SET_STATUS';
     payload: any;
 }
 
@@ -40,7 +41,8 @@ const initialUserState: UserState = {
 // 新增 displayState 初始狀態
 const initialDisplayState: DisplayState = {
     celltype: '3', // 預設為3列
-    changeMeal: 0
+    changeMeal: 0,
+    status: 0      // 預設狀態為0
 };
 
 // 簡化的 userReducer
@@ -73,6 +75,11 @@ const displayReducer = (state: DisplayState, action: DisplayAction): DisplayStat
             return {
                 ...state,
                 changeMeal: Number(action.payload) || 0,
+            };
+        case 'SET_STATUS':
+            return {
+                ...state,
+                status: Number(action.payload) || 0,
             };
         default:
             return state;
