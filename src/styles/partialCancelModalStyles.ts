@@ -74,7 +74,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     background: '#fff',
     color: '#222',
     borderRadius: 0,
-    padding: isMobile ? '12px 0 12px 30px' : '16px 0 16px 30px',
+    padding: isMobile ? '12px 0 12px 30px' : isTablet ? '16px 0 16px 30px 16px 40px' : '16px 0 16px 30px',
     marginBottom: isMobile ? 12 : 16,
     fontWeight: 700,
     fontSize: isMobile ? '1.3rem' : isTablet ? '1.5rem' : '1.7rem',
@@ -169,18 +169,23 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden'
+    overflow: 'visible',
+    textAlign: 'center' as const
   },
 
   actionButton: {
     minWidth: isMobile ? 36 : 44,
     padding: '10px 14px',
     marginRight: 8,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    overflow: 'visible',
+    textOverflow: 'clip',
     fontSize: isMobile ? '1.8rem' : isTablet ? '2.0rem' : '2.2rem',
     fontWeight: 700,
     whiteSpace: 'nowrap',
+    textAlign: 'center' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif'
   },
 
@@ -188,11 +193,15 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     minWidth: isMobile ? 36 : 44,
     padding: '10px 14px',
     marginRight: 8,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    overflow: 'visible',
+    textOverflow: 'clip',
     fontSize: isMobile ? '1.1rem' : isTablet ? '1.3rem' : '1.5rem',
     fontWeight: 700,
     whiteSpace: 'nowrap',
+    textAlign: 'center' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif'
   },
 
