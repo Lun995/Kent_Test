@@ -74,7 +74,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     background: '#fff',
     color: '#222',
     borderRadius: 0,
-    padding: isMobile ? '12px 0 12px 30px' : isTablet ? '16px 0 16px 30px 16px 40px' : '16px 0 16px 30px',
+    padding: isMobile ? '12px 0 12px 30px' : isTablet ? '16px 10px 16px 40px' : '16px 0 16px 30px',
     marginBottom: isMobile ? 12 : 16,
     fontWeight: 700,
     fontSize: isMobile ? '1.3rem' : isTablet ? '1.5rem' : '1.7rem',
