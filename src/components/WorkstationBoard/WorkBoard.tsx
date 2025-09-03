@@ -425,7 +425,7 @@ export function WorkBoard({
                 <div style={{
                   ...styles.columnHeader,
                   // 僅 HOLD 欄在平板時增加 2px 高度，避免中英文高度落差
-                  padding: isTablet ? '1px 2px' : '4px 2px'
+                  padding: isTablet ? '2px 2px' : '4px 2px'
                 }}>HOLD</div>
                 {/* 合併所有Hold品項到同一張牌卡 */}
                 <div
