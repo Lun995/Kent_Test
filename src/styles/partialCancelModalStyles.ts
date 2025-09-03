@@ -124,8 +124,8 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     marginLeft: 0,
     maxWidth: '100%',
     minWidth: 0,
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
+    wordBreak: 'break-word' as const,
+    overflowWrap: 'break-word' as const,
   },
 
   nameText: {
@@ -133,8 +133,8 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     overflow: 'visible',
     textOverflow: 'clip',
     whiteSpace: 'normal',
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
+    wordBreak: 'break-word' as const,
+    overflowWrap: 'break-word' as const,
     maxWidth: '100%',
     fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif',
   },
