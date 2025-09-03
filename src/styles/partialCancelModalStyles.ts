@@ -19,9 +19,9 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
 
   modal: {
     background: '#fff',
-    width: isMobile ? '95vw' : 600,
+    width: isMobile ? '95vw' : 700,
     maxWidth: '98vw',
-    minWidth: isMobile ? '80vw' : 500,
+    minWidth: isMobile ? '80vw' : 600,
     minHeight: isMobile ? '25vh' : 250,
     maxHeight: '85vh',
     border: '3px solid #222',
@@ -58,7 +58,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     width: '100%',
     flex: 1,
     overflow: 'hidden',
-    padding: isMobile ? '20px 12px' : '24px 12px',
+    padding: isMobile ? '20px 30px' : '24px 30px',
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
@@ -74,7 +74,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     background: '#fff',
     color: '#222',
     borderRadius: 0,
-    padding: isMobile ? '12px 8px' : '16px 8px',
+    padding: isMobile ? '12px 40px 12px 5px' : '16px 40px 16px 5px',
     marginBottom: isMobile ? 12 : 16,
     fontWeight: 700,
     fontSize: isMobile ? '1.3rem' : isTablet ? '1.5rem' : '1.7rem',
@@ -109,6 +109,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     maxWidth: '100%',
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif',
   },
 
   nameCell: {
@@ -120,17 +121,22 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     overflow: 'visible',
     fontSize: isMobile ? '1.4rem' : isTablet ? '1.6rem' : '1.8rem',
     paddingLeft: 0,
-    marginLeft: isMobile ? -2 : -3,
+    marginLeft: 0,
     maxWidth: '100%',
     minWidth: 0,
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
   },
 
   nameText: {
     fontSize: isMobile ? '1.4rem' : isTablet ? '1.6rem' : '1.8rem',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    overflow: 'visible',
+    textOverflow: 'clip',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
     maxWidth: '100%',
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif',
   },
 
   noteText: {
@@ -143,6 +149,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     wordBreak: 'break-word' as const,
     overflowWrap: 'break-word' as const,
     maxWidth: '100%',
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif',
   },
 
   countCell: {
@@ -155,6 +162,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif',
   },
 
   actionCell: {
@@ -172,7 +180,8 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     textOverflow: 'ellipsis',
     fontSize: isMobile ? '1.8rem' : isTablet ? '2.0rem' : '2.2rem',
     fontWeight: 700,
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif'
   },
 
   maxButton: {
@@ -183,7 +192,8 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     textOverflow: 'ellipsis',
     fontSize: isMobile ? '1.1rem' : isTablet ? '1.3rem' : '1.5rem',
     fontWeight: 700,
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif'
   },
 
   editCount: {
@@ -193,7 +203,8 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    fontSize: isMobile ? '1.3rem' : isTablet ? '1.5rem' : '1.7rem'
+    fontSize: isMobile ? '1.3rem' : isTablet ? '1.5rem' : '1.7rem',
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif'
   },
 
   // 退餐资料新框限样式
@@ -295,6 +306,7 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     flex: '0 0 auto',
     margin: '0 auto',
     boxSizing: 'border-box' as const,
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif',
   },
 
   closeButton: {
@@ -310,5 +322,6 @@ export const partialCancelModalStyles = ({ isMobile, isTablet }: ResponsiveProps
     flex: '0 0 auto',
     margin: '0 auto',
     boxSizing: 'border-box' as const,
+    fontFamily: 'Microsoft JhengHei, 微軟正黑體, PingFang TC, PingFang SC, Helvetica Neue, Arial, sans-serif',
   },
 });
