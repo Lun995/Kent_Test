@@ -62,7 +62,10 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
     alignItems: 'center',
     justifyContent: 'center',
     letterSpacing: '0.2em',
-    fontFamily: 'Arial, sans-serif',
+    fontFamily: 'Noto Sans CJK TC, Noto Sans CJK SC, Noto Sans CJK JP, Noto Sans, Arial, sans-serif',
+    // 統一表頭高度，解決中英文高度差異問題
+    height: isMobile ? 'auto' : isTablet ? '40px' : 'auto',
+    lineHeight: isMobile ? 'normal' : isTablet ? '40px' : 'normal',
   },
 
   orderCard: {
@@ -86,8 +89,7 @@ export const workBoardStyles = ({ isMobile, isTablet }: ResponsiveProps) => ({
   },
 
   cardHeader: {
-    // 平板時 HOLD 列表表頭高度多 2px：以 padding 的垂直值 +2px 達成
-    padding: isMobile ? '4px 8px' : (isTablet ? '8px 12px' : '6px 12px'),
+    padding: isMobile ? '4px 8px' : '6px 12px',
     fontSize: isMobile ? '1.2rem' : isTablet ? '1.5rem' : '1.7rem',
     fontWeight: 700,
     textAlign: 'center' as const,

@@ -118,7 +118,8 @@ export default function LoginPage() {
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        position: 'relative'
+        position: 'relative',
+        marginTop: isTablet ? '20px' : '0px',
       }}>
         <div 
           id="loginWrap"

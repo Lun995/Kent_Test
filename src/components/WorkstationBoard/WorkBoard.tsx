@@ -425,7 +425,7 @@ export function WorkBoard({
                 <div style={{
                   ...styles.columnHeader,
                   // 僅 HOLD 欄在平板時增加 2px 高度，避免中英文高度落差
-                  padding: isTablet ? '5px 2px' : '4px 2px'
+                  padding: isTablet ? '6px 2px' : '4px 2px'
                 }}>HOLD</div>
                 {/* 合併所有Hold品項到同一張牌卡 */}
                 <div
@@ -442,7 +442,7 @@ export function WorkBoard({
                       overflow: 'hidden',
                       cursor: 'pointer',
                       // 僅 HOLD 欄位：平板增加 2px 高度
-                      height: isTablet ? '33px' : '31px',
+                      height: isTablet ? '34px' : '32px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -450,7 +450,7 @@ export function WorkBoard({
                     onDoubleClick={() => onCardHeaderDoubleClick('hold', 'hold-main')}
                     title="雙擊隱藏此牌卡"
                   >
-                    {/* 表頭只顯示黃色背景，不顯示文字 */}
+                    
                   </div>
                   <div style={styles.cardContent}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
