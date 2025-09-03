@@ -122,23 +122,23 @@ export default function LoginPage() {
       }}>
         <div 
           id="loginWrap"
-          style={{
-            width: '380px',
-            height: '580px',
-            padding: '2rem',
-            borderRadius: '50px',
-            border: '2px solid rgba(181, 181, 182, 0.3)',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(5px)',
-            position: 'relative',
-            // 平板時往下調整 20px（80 → 100）
-            marginTop: isTablet ? '100px' : '60px',
-            zIndex: 5,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
+                                           style={{
+              width: '380px',
+              height: '600px',
+              padding: '2rem',
+              borderRadius: '50px',
+              border: '2px solid rgba(181, 181, 182, 0.3)',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(5px)',
+              position: 'relative',
+                           // 平板時往下調整 35px
+             marginTop: isTablet ? '85px' : '60px',
+              zIndex: 5,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
         >
           {/* Logo 區域 */}
           <div id="posLogo" style={{ 
@@ -160,14 +160,14 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 登入表單 */}
-          <div style={{ 
-            marginTop: '0px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%'
-          }}>
+                     {/* 登入表單 */}
+           <div style={{ 
+             marginTop: isTablet ? '-5px' : '0px',
+             display: 'flex',
+             flexDirection: 'column',
+             alignItems: 'center',
+             width: '100%'
+           }}>
             {/* KDS 功能選項卡 - 移動到登入表單上方 */}
             <div style={{ 
               padding: '0 40px',
